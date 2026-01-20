@@ -1,0 +1,66 @@
+// Copyright (c) 2015, the Dart Team. All rights reserved. Use of this
+// source code is governed by a BSD-style license that can be found in
+// the LICENSE file.
+
+/// File used to test reflection code generation.
+/// Part of the entry point 'meta_reflectors_test.dart'.
+///
+/// Independence: The `ScopeMetaReflector` and `AllReflectorsMetaReflector`
+/// classes are independent of the particular entry point 'reflectors_test.dart'
+/// and its transitive closure, it could be in a third-party package only
+/// depending on reflection.
+library test_reflection.test.meta_reflectors_meta;
+
+@GlobalQuantifyCapability(
+  r'^tom_reflection.Reflection$',
+  AllReflectorsMetaReflector(),
+)
+import 'package:tom_reflection/tom_reflection.dart';
+
+// ignore_for_file: omit_local_variable_types
+
+/// Used to provide access to reflectors associated with a given scope,
+/// which is a [String]. The connection is created by top level functions
+/// in the program with the annotation `@MetaReflector()`. Such a function
+/// must have type `F` where `typedef Iterable<Reflection> F(String _)`,
+/// and it is assumed to return the set of reflectors which belong to the
+/// scope specified by the argument.
+class ScopeMetaReflector extends Reflection {
+  const ScopeMetaReflector()
+    : super(
+        const TopLevelInvokeMetaCapability(ScopeMetaReflector),
+        declarationsCapability,
+        libraryCapability,
+      );
+  Set<Reflection> reflectionsOfScope(String scope) {
+    var result = <Reflection>{};
+    for (LibraryMirror library in libraries.values) {
+      for (DeclarationMirror declaration in library.declarations.values) {
+        if (declaration is MethodMirror) {
+          result.addAll(
+            library.invoke(declaration.simpleName, [scope])
+                as Iterable<Reflection>,
+          );
+        }
+      }
+    }
+    return result;
+  }
+}
+
+/// Used to get access to all reflectors.
+class AllReflectorsMetaReflector extends Reflection {
+  const AllReflectorsMetaReflector()
+    : super(subtypeQuantifyCapability, newInstanceCapability);
+
+  Set<Reflection> get reflectors {
+    var result = <Reflection>{};
+    for (var classMirror in annotatedClasses) {
+      if (classMirror.isAbstract) continue;
+      var reflector =
+          Reflection.getInstance(classMirror.reflectedType) as Reflection;
+      result.add(reflector);
+    }
+    return result;
+  }
+}

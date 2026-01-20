@@ -1,0 +1,8 @@
+builders:
+  reflection_generator:
+    import: 'package:tom_reflection_generator/reflection_generator.dart'
+    builder_factories: ['reflectionGenerator']
+    build_extensions: {'.dart': ['.reflection.dart']}
+    auto_apply: dependents
+    build_to: source
+    applies_builders: ['source_gen|combining_builder']

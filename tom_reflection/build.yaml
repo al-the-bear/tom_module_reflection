@@ -1,0 +1,8 @@
+targets:
+  $default:
+    builders:
+      tom_reflection_generator:reflection_generator:
+        generate_for:
+          - example/tom_reflection_example.dart
+        options:
+          formatted: true

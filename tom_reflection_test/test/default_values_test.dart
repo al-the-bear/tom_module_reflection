@@ -1,0 +1,75 @@
+// Copyright (c) 2015, the Dart Team. All rights reserved. Use of this
+// source code is governed by a BSD-style license that can be found in
+// the LICENSE file.
+
+// File used to test reflection code generation.
+// Uses default values.
+
+library test_reflection.test.default_values_test;
+
+import 'package:tom_reflection/tom_reflection.dart';
+import 'package:test/test.dart';
+import 'default_values_lib.dart' as prefix;
+import 'default_values_test.reflection.dart';
+
+class MyReflection extends Reflection {
+  const MyReflection() : super(newInstanceCapability, typeCapability);
+}
+
+const myReflection = MyReflection();
+
+const String globalConstant = '20';
+
+class B {
+  const B({required int named});
+}
+
+@myReflection
+class A {
+  static const localConstant = 10;
+  static const localConstantImportedValue =
+      2 * (localConstant + prefix.globalConstant.length);
+  A.optional([
+    int x = prefix.A.localConstant + 31,
+    bool y = identical(globalConstant, globalConstant),
+    z = prefix.globalConstant + prefix.globalConstant,
+    w = const [
+      String,
+      null,
+      myReflection,
+      B(named: 24),
+      <int, Type>{1: A},
+    ],
+  ]) : f = x,
+       g = y,
+       h = z,
+       i = w;
+  int f = 0;
+  bool g;
+  String h;
+  List i;
+}
+
+void main() {
+  initializeReflection();
+
+  var classMirror = myReflection.reflectType(A) as ClassMirror;
+  test('optional argument default value, imported local constant', () {
+    expect((classMirror.newInstance('optional', [], {}) as A).f, 42);
+  });
+  test('optional argument default value, using identical', () {
+    expect((classMirror.newInstance('optional', [], {}) as A).g, true);
+  });
+  test('optional argument default value, imported local constant', () {
+    expect((classMirror.newInstance('optional', [], {}) as A).h, '2121');
+  });
+  test('optional argument default value, ', () {
+    expect((classMirror.newInstance('optional', [], {}) as A).i, [
+      String,
+      null,
+      myReflection,
+      const B(named: 24),
+      const {1: A},
+    ]);
+  });
+}

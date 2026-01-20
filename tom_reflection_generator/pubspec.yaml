@@ -1,6 +1,6 @@
 name: tom_reflection_generator
 description: Standalone reflection generator (builder + CLI) for the Tom framework.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/al-the-bear/tom_module_reflection
 
 environment:
@@ -15,8 +15,7 @@ dependencies:
   logging: ^1.3.0
   path: ^1.9.0
   pub_semver: ^2.2.0
-  tom_reflection:
-    path: ../tom_reflection
+  tom_reflection: ^1.0.0
   yaml: ^3.1.2
 
 dev_dependencies:

@@ -3,7 +3,7 @@ description: >
   Runtime reflection support based on code generation, using 'capabilities' to
   specify which operations to support. This is a fork of the 'reflectable' package
   with modifications to better suit the Tom framework's needs and some bug fixes.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/al-the-bear/tom_module_reflection
 
 environment:

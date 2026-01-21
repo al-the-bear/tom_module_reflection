@@ -1,6 +1,7 @@
 name: tom_reflection_test
 description: Tests for the tom_reflection standalone reflection generator.
 version: 1.0.0
+publish_to: none
 
 environment:
   sdk: ^3.10.4

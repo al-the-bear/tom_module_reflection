@@ -10,7 +10,7 @@
 ///
 /// To generate the reflection code, run from the tom_reflection directory:
 /// ```bash
-/// dart run tom_build_tools:reflection_generator example/tom_reflection_example.dart
+/// dart run tom_build_cli:reflection_generator example/tom_reflection_example.dart
 /// ```
 ///
 /// Then run this example:

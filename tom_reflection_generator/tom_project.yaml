@@ -1,1 +1,4 @@
-{}
+project_id: RFLG
+name: reflectgen
+description: >-
+  Reflection code generator.

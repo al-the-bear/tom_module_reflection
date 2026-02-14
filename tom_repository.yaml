@@ -1,0 +1,8 @@
+# Tom Repository Configuration
+# This file identifies the repository for git traversal commands
+
+repository_id: RFL
+name: reflection
+description: >-
+  Runtime reflection library, code generator, and test project.
+github: al-the-bear/tom_module_reflection

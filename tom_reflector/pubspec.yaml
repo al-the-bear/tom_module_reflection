@@ -18,7 +18,7 @@ dependencies:
   build: ^4.0.4
   tom_reflector_model:
     path: ../tom_reflector_model
-  tom_build_base: ^2.5.2
+  tom_build_base: ^2.5.5
   tom_d4rt_ast:
     path: ../../d4rt/tom_d4rt_ast
 

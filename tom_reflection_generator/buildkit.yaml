@@ -5,7 +5,7 @@ compiler:
     # macOS ARM64 - compile for self + all Linux targets
     - commandline:
         - mkdir -p $TOM_BINARY_PATH/%{target-platform-vs}
-        - dart compile exe %{file} --target-os=%{target-os} -o $TOM_BINARY_PATH/%{target-platform-vs}/reflectiongenerator
+        - dart compile exe %{file} --target-os=%{dart-target-os} --target-arch=%{dart-target-arch} -o $TOM_BINARY_PATH/%{target-platform-vs}/reflectiongenerator
       files: bin/tom_reflection_generator.dart
       targets: [darwin-arm64, linux-x64, linux-arm64, linux-armhf]
       platforms: [darwin-arm64]
@@ -13,7 +13,7 @@ compiler:
     # Other platforms - compile for self only
     - commandline:
         - mkdir -p $TOM_BINARY_PATH/%{target-platform-vs}
-        - dart compile exe %{file} -o $TOM_BINARY_PATH/%{target-platform-vs}/reflectiongenerator
+        - dart compile exe %{file} --target-os=%{dart-target-os} --target-arch=%{dart-target-arch} -o $TOM_BINARY_PATH/%{target-platform-vs}/reflectiongenerator
       files: bin/tom_reflection_generator.dart
       platforms: [darwin-x64, linux-*, win32-*]
 

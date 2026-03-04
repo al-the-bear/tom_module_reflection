@@ -35,9 +35,10 @@ const reflectorOptions = <OptionDefinition>[
 
 /// Tom Reflector tool definition.
 final reflectorTool = ToolDefinition(
-  name: 'tom_reflector',
+  name: 'reflector',
   description: 'Dart code reflection generation tool',
   version: AnalyzerVersionInfo.version,
+  versionString: 'Tom Reflector ${AnalyzerVersionInfo.versionLong}',
   mode: ToolMode.singleCommand,
   worksWithNatures: {DartProjectFolder},
   features: const NavigationFeatures(

@@ -1,4 +1,19 @@
-# Tom Build Configuration for tom_analyzer
+# Tom Build Configuration for tom_reflector
 
 versioner:
   variable-prefix: analyzer
+
+compiler:
+  - platform: darwin-arm64
+    cross-compile: true
+    compile:
+      - source: bin/reflector.dart
+        output: $TOM_BINARY_PATH/darwin-arm64/reflector
+    postcompile:
+      - chmod -R +x $TOM_BINARY_PATH/darwin-arm64/
+  - platform: linux-x64
+    compile:
+      - source: bin/reflector.dart
+        output: $TOM_BINARY_PATH/linux-x64/reflector
+    postcompile:
+      - chmod -R +x $TOM_BINARY_PATH/linux-x64/

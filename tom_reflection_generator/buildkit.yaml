@@ -19,7 +19,7 @@ compiler:
 
     # Windows - compile for self only
     - pipeline:
-      - shell dart compile exe %{file} --target-os=%{dart-target-os} --target-arch=%{dart-target-arch} -o %TOM_BINARY_PATH%/win32-x64/reflectiongenerator.exe
+      - shell dart compile exe %{file} --target-os=%{dart-target-os} --target-arch=%{dart-target-arch} -o $TOM_BINARY_PATH/win32-x64/reflectiongenerator.exe
       files: bin/tom_reflection_generator.dart
       platforms: [win32-*]
 

@@ -241,11 +241,23 @@ class SummaryCacheManager {
     }
   }
 
-  /// Clears outdated summaries that don't match current dependencies.
+  /// Clears outdated summaries created with a different SDK version.
+  ///
+  /// Since SDK version is not currently embedded in summary files,
+  /// this is a placeholder that clears all summaries when the SDK changes.
+  /// 
+  /// TODO: Implement SDK version checking in summary metadata.
+  Future<void> cleanOutdated() async {
+    // For now, we can't check SDK version in summaries.
+    // This will be implemented when we add SDK metadata to summaries.
+    // Currently a no-op - callers should use cleanUnusedSummaries() instead.
+  }
+
+  /// Clears summaries that don't match current dependencies.
   ///
   /// Keeps only summaries that match a dependency in [currentDependencies].
   /// This helps clean up old version summaries after pub upgrade.
-  Future<int> cleanOutdated(List<PackageDependency> currentDependencies) async {
+  Future<int> cleanUnusedSummaries(List<PackageDependency> currentDependencies) async {
     final cached = await listCachedSummaries();
     final current = <String>{
       for (final dep in currentDependencies)

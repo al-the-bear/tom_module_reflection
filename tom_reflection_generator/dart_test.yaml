@@ -1,0 +1,5 @@
+tags:
+  integration:
+    # Integration tests that use real analyzer context and pub cache packages.
+    # Run with: dart test --tags integration
+    # Exclude with: dart test --exclude-tags integration

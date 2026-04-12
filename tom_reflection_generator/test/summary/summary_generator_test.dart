@@ -194,6 +194,33 @@ void main() {
         expect(result.skipped, equals(2));
         expect(result.generated, equals(0));
       });
+
+      test('processes packages independently (no circular dependency issue)',
+          () async {
+        // Packages that might depend on each other in reality are each
+        // analyzed independently — each gets its own AnalysisContextCollection.
+        // This means circular transitive dependencies between packages
+        // can't cause infinite loops during summary generation.
+        final deps = [
+          const PackageDependency(
+            name: 'nonexistent_a',
+            version: '1.0.0',
+            source: 'hosted',
+            hostedUrl: 'https://pub.dev',
+          ),
+          const PackageDependency(
+            name: 'nonexistent_b',
+            version: '1.0.0',
+            source: 'hosted',
+            hostedUrl: 'https://pub.dev',
+          ),
+        ];
+
+        // Should complete without hanging — each package is processed
+        // sequentially and independently
+        final result = await generator.generateMissingSummaries(deps);
+        expect(result.total, equals(2));
+      });
     });
   });
 

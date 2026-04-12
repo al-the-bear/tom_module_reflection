@@ -294,5 +294,99 @@ void main() {
         expect(Directory(cacheManager.cacheDirectory).existsSync(), isTrue);
       });
     });
+
+    group('SDK version handling', () {
+      test('accepts custom dart SDK version', () {
+        final manager = SummaryCacheManager(
+          tempDir.path,
+          dartSdkVersion: '3.8.0',
+        );
+        expect(manager.dartSdkVersion, equals('3.8.0'));
+      });
+
+      test('detects SDK version from Platform when not provided', () {
+        final manager = SummaryCacheManager(tempDir.path);
+        expect(
+          manager.dartSdkVersion,
+          matches(RegExp(r'^\d+\.\d+\.\d+$')),
+        );
+      });
+
+      test('different SDK versions use same cache paths', () {
+        // Currently SDK version is not embedded in cache paths.
+        // This documents the current behavior — a future change
+        // may add SDK-versioned subdirectories.
+        final managerA = SummaryCacheManager(
+          tempDir.path,
+          dartSdkVersion: '3.8.0',
+        );
+        final managerB = SummaryCacheManager(
+          tempDir.path,
+          dartSdkVersion: '3.10.0',
+        );
+
+        final pathA = managerA.getCachePath('pkg', '1.0.0');
+        final pathB = managerB.getCachePath('pkg', '1.0.0');
+        expect(pathA, equals(pathB));
+      });
+    });
+
+    group('cleanOutdated', () {
+      test('is currently a no-op', () async {
+        // cleanOutdated is a placeholder until SDK version metadata
+        // is embedded in summary files. Verify it doesn't throw.
+        await cacheManager.writeSummary(
+            'pkg', '1.0.0', Uint8List.fromList([1]));
+        await cacheManager.cleanOutdated();
+
+        // Summary should still exist (no-op)
+        expect(await cacheManager.hasSummary('pkg', '1.0.0'), isTrue);
+      });
+    });
+
+    group('loadSummaries', () {
+      test('returns empty store when no summaries exist', () async {
+        final deps = [
+          const PackageDependency(
+              name: 'a', version: '1.0.0', source: 'hosted'),
+        ];
+
+        final store = await cacheManager.loadSummaries(deps);
+        // SummaryDataStore doesn't expose a count, but should not throw
+        expect(store, isNotNull);
+      });
+
+      test('skips non-cacheable dependencies', () async {
+        final deps = [
+          const PackageDependency(
+              name: 'local', version: '1.0.0', source: 'path'),
+        ];
+
+        final store = await cacheManager.loadSummaries(deps);
+        expect(store, isNotNull);
+      });
+    });
+
+    group('CacheStats', () {
+      test('totalSizeMB converts bytes correctly', () {
+        const stats = CacheStats(
+          summaryCount: 1,
+          totalSizeBytes: 1048576, // 1 MB
+          cacheDirectory: '/tmp/test',
+        );
+        expect(stats.totalSizeMB, closeTo(1.0, 0.001));
+      });
+
+      test('toString contains summary count and size', () {
+        const stats = CacheStats(
+          summaryCount: 5,
+          totalSizeBytes: 2097152, // 2 MB
+          cacheDirectory: '/tmp/test',
+        );
+        final str = stats.toString();
+        expect(str, contains('5'));
+        expect(str, contains('2.00'));
+      });
+    });
   });
 }

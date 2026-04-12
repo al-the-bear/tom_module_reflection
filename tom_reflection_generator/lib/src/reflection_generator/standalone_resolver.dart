@@ -47,9 +47,14 @@ class StandaloneLibraryResolver implements LibraryResolver {
   /// summary files (`.sum`) for the listed packages, skipping full analysis
   /// of those dependencies. This can dramatically reduce analysis time for
   /// projects with many stable dependencies.
+  ///
+  /// If [sdkSummaryPath] is provided, it's used as the Dart SDK summary.
+  /// If not provided but [librarySummaryPaths] is set, we look for an
+  /// existing `sdk.sum` in `.dart_tool/build_resolvers/`.
   static Future<StandaloneLibraryResolver> create(
     String projectRoot, {
     List<String>? librarySummaryPaths,
+    String? sdkSummaryPath,
   }) async {
     var absolutePath = p.isAbsolute(projectRoot)
         ? projectRoot
@@ -60,12 +65,19 @@ class StandaloneLibraryResolver implements LibraryResolver {
 
     final AnalysisContextCollection collection;
     if (librarySummaryPaths != null && librarySummaryPaths.isNotEmpty) {
+      // Try to find SDK summary if not provided
+      var effectiveSdkSummaryPath = sdkSummaryPath;
+      if (effectiveSdkSummaryPath == null) {
+        effectiveSdkSummaryPath = _findSdkSummary(absolutePath);
+      }
+
       // Use AnalysisContextCollectionImpl to pass librarySummaryPaths,
       // which enables the analyzer to skip full analysis of summarized
       // packages (they are loaded as InSummarySource).
       collection = AnalysisContextCollectionImpl(
         includedPaths: [absolutePath],
         librarySummaryPaths: librarySummaryPaths,
+        sdkSummaryPath: effectiveSdkSummaryPath,
       );
     } else {
       collection = AnalysisContextCollection(
@@ -76,6 +88,17 @@ class StandaloneLibraryResolver implements LibraryResolver {
     final packageName = _getPackageName(absolutePath);
 
     return StandaloneLibraryResolver._(collection, absolutePath, packageName);
+  }
+
+  /// Looks for an existing SDK summary in `.dart_tool/build_resolvers/`.
+  ///
+  /// Returns the path if found, null otherwise.
+  static String? _findSdkSummary(String projectRoot) {
+    final sdkSumPath = p.join(projectRoot, '.dart_tool', 'build_resolvers', 'sdk.sum');
+    if (File(sdkSumPath).existsSync()) {
+      return sdkSumPath;
+    }
+    return null;
   }
 
   static String _getPackageName(String projectRoot) {
@@ -267,7 +290,8 @@ class StandaloneLibraryResolver implements LibraryResolver {
         return result.element;
       }
     } catch (e) {
-      // File could not be resolved
+      // File could not be resolved - log in verbose mode
+      stderr.writeln('  resolveFile error: $e');
     }
     return null;
   }

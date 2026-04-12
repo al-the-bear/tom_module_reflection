@@ -107,10 +107,10 @@ class SummaryGenerator {
       );
     }
 
-    // Find all public library files
-    final libraryFiles = _findPublicLibraries(packagePath);
+    // Find all library files (public and internal)
+    final libraryFiles = _findAllLibraries(packagePath);
     if (libraryFiles.isEmpty) {
-      // No public libraries — nothing to summarize
+      // No libraries — nothing to summarize
       stdout.writeln('    Skipping ${dependency.name}: no public libraries');
       return false;
     }
@@ -121,6 +121,7 @@ class SummaryGenerator {
     // Analyze and create summary bundle
     final summaryBytes = await _analyzeAndCreateBundle(
       packagePath,
+      dependency.name,
       libraryFiles,
     );
 
@@ -202,13 +203,13 @@ class SummaryGenerator {
     }
   }
 
-  /// Finds all public Dart library files in a package's `lib/` directory.
+  /// Finds all Dart library files in a package's `lib/` directory.
   ///
-  /// Returns absolute, normalized paths for each `.dart` file found.
-  /// Excludes files in `lib/src/` as they are implementation details
-  /// (though they are still included as part units when the public
-  /// libraries import them).
-  List<String> _findPublicLibraries(String packagePath) {
+  /// Returns absolute, normalized paths for each `.dart` file found,
+  /// including files in `lib/src/`. All libraries need to be included
+  /// because public libraries may export/re-export symbols from internal
+  /// src/ libraries, and those need to be in the summary.
+  List<String> _findAllLibraries(String packagePath) {
     final libDir = Directory(p.join(packagePath, 'lib'));
     if (!libDir.existsSync()) {
       return [];
@@ -216,8 +217,8 @@ class SummaryGenerator {
 
     final libraries = <String>[];
 
-    // Find all .dart files directly in lib/ (not in lib/src/)
-    for (final entity in libDir.listSync()) {
+    // Find all .dart files recursively in lib/ (including lib/src/)
+    for (final entity in libDir.listSync(recursive: true)) {
       if (entity is File && entity.path.endsWith('.dart')) {
         libraries.add(p.normalize(entity.path));
       }
@@ -257,13 +258,43 @@ class SummaryGenerator {
   /// Creates a temporary [AnalysisContextCollectionImpl] for the package,
   /// resolves all public libraries, and serializes them using
   /// [_createSummaryBundle].
+  ///
+  /// Creates a temporary `.dart_tool/package_config.json` to ensure the
+  /// analyzer uses proper `package:` URIs instead of `file://` URIs.
   Future<Uint8List?> _analyzeAndCreateBundle(
     String packagePath,
+    String packageName,
     List<String> libraryFiles,
   ) async {
     AnalysisContextCollectionImpl? collection;
+    final dartToolDir = Directory(p.join(packagePath, '.dart_tool'));
+    final packageConfigFile = File(p.join(dartToolDir.path, 'package_config.json'));
+    final hadDartTool = dartToolDir.existsSync();
+    final hadPackageConfig = packageConfigFile.existsSync();
 
     try {
+      // Create minimal package_config.json for proper package: URI resolution
+      if (!dartToolDir.existsSync()) {
+        dartToolDir.createSync(recursive: true);
+      }
+      
+      // Get language version from pubspec.yaml if possible
+      final languageVersion = _getLanguageVersion(packagePath);
+      
+      // Write a minimal package_config.json
+      final packageConfig = '''{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "$packageName",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "$languageVersion"
+    }
+  ]
+}''';
+      packageConfigFile.writeAsStringSync(packageConfig);
+
       // Create analysis context for the package
       collection = AnalysisContextCollectionImpl(
         includedPaths: [p.normalize(p.absolute(packagePath))],
@@ -304,6 +335,38 @@ class SummaryGenerator {
       return _createSummaryBundle(resolvedLibraries);
     } finally {
       await collection?.dispose();
+      
+      // Clean up the temporary package_config.json
+      if (!hadPackageConfig && packageConfigFile.existsSync()) {
+        packageConfigFile.deleteSync();
+      }
+      if (!hadDartTool && dartToolDir.existsSync()) {
+        try {
+          dartToolDir.deleteSync(recursive: true);
+        } catch (_) {
+          // Ignore cleanup failures
+        }
+      }
     }
+  }
+  
+  /// Extracts the language version from pubspec.yaml environment constraint.
+  /// Returns a default version if not found.
+  String _getLanguageVersion(String packagePath) {
+    final pubspecFile = File(p.join(packagePath, 'pubspec.yaml'));
+    if (!pubspecFile.existsSync()) {
+      return '2.12'; // Default to null-safety era
+    }
+    
+    final content = pubspecFile.readAsStringSync();
+    
+    // Look for environment.sdk constraint like "sdk: ^3.0.0" or "sdk: '>=3.0.0 <4.0.0'"
+    final sdkMatch = RegExp(r'''sdk:\s*['"]?[>=^]*(\d+\.\d+)''', multiLine: true)
+        .firstMatch(content);
+    if (sdkMatch != null) {
+      return sdkMatch.group(1)!;
+    }
+    
+    return '2.12'; // Default
   }
 }

@@ -293,25 +293,64 @@ class DependencyResolver {
     if (dependency.source != 'sdk') return null;
 
     if (dependency.sdkName == 'flutter') {
-      // Get Flutter SDK path
-      try {
-        final result = await Process.run(
-          'flutter',
-          ['--no-version-check', 'sdk-path'],
-          runInShell: true,
-        );
+      final sdkPath = await _getFlutterSdkPath();
+      if (sdkPath == null) return null;
 
-        if (result.exitCode == 0) {
-          final sdkPath = (result.stdout as String).trim();
-          // Flutter packages are in packages/ subdirectory
-          return p.join(sdkPath, 'packages', dependency.name);
+      // sky_engine and flutter_gpu are in bin/cache/pkg/, not packages/
+      if (dependency.name == 'sky_engine' ||
+          dependency.name == 'flutter_gpu') {
+        final cachePath =
+            p.join(sdkPath, 'bin', 'cache', 'pkg', dependency.name);
+        if (await Directory(cachePath).exists()) {
+          return cachePath;
         }
-      } catch (_) {
-        // Fall through
+      }
+
+      // Regular Flutter packages are in packages/
+      final packagesPath = p.join(sdkPath, 'packages', dependency.name);
+      if (await Directory(packagesPath).exists()) {
+        return packagesPath;
       }
     }
 
     // Dart SDK packages - not typically cached
+    return null;
+  }
+
+  /// Gets the Flutter SDK root path.
+  ///
+  /// Tries multiple methods:
+  /// 1. FLUTTER_ROOT environment variable
+  /// 2. Resolve `which flutter` to find SDK path
+  Future<String?> _getFlutterSdkPath() async {
+    // Try FLUTTER_ROOT environment variable first
+    final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+    if (flutterRoot != null && flutterRoot.isNotEmpty) {
+      final dir = Directory(flutterRoot);
+      if (await dir.exists()) {
+        return flutterRoot;
+      }
+    }
+
+    // Resolve from `which flutter` - the flutter binary is at <sdk>/bin/flutter
+    try {
+      final result = await Process.run('which', ['flutter'], runInShell: true);
+      if (result.exitCode == 0) {
+        final flutterPath = (result.stdout as String).trim();
+        if (flutterPath.isNotEmpty) {
+          // Resolve symlinks to get real path
+          final resolved = await File(flutterPath).resolveSymbolicLinks();
+          // Flutter binary is at <sdk>/bin/flutter, so SDK is two levels up
+          final sdkPath = p.dirname(p.dirname(resolved));
+          if (await Directory(sdkPath).exists()) {
+            return sdkPath;
+          }
+        }
+      }
+    } catch (_) {
+      // Fall through
+    }
+
     return null;
   }
 }

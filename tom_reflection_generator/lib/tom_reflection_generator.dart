@@ -6,5 +6,6 @@ library;
 
 export 'reflection_generator.dart';
 export 'cli.dart';
+export 'summary.dart';
 export 'src/reflection_generator/standalone_resolver.dart';
 export 'src/reflection_generator/library_resolver.dart' show FileId;

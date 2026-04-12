@@ -177,14 +177,17 @@ Future<void> _runGenerateMode(List<String> args) async {
 
   // Summary caching stage
   List<String>? summaryPaths;
+  String? sdkSummaryPath;
   if (!noCache) {
-    summaryPaths = await _runSummaryCacheStage(
+    final cacheResult = await _runSummaryCacheStage(
       projectRoot,
       verbose: verbose,
       rebuildCache: rebuildCache,
       showCacheStatus: showCacheStatus,
       cacheOnlyPackages: cacheOnlyPackages,
     );
+    summaryPaths = cacheResult?.summaryPaths;
+    sdkSummaryPath = cacheResult?.sdkSummaryPath;
     if (showCacheStatus) {
       // --show-cache-status is info-only, exit after displaying
       exit(0);
@@ -195,6 +198,7 @@ Future<void> _runGenerateMode(List<String> args) async {
   final resolver = await StandaloneLibraryResolver.create(
     projectRoot,
     librarySummaryPaths: summaryPaths,
+    sdkSummaryPath: sdkSummaryPath,
   );
 
   try {
@@ -306,12 +310,11 @@ Future<void> _collectDartFilesFromDirectory(String dirPath, Set<String> files) a
 }
 
 /// Runs the summary cache stage: resolves dependencies, generates missing
-/// summaries, and returns the list of cached `.sum` file paths to pass to
-/// the analyzer.
+/// summaries (including the SDK summary), and returns the cached file paths
+/// to pass to the analyzer.
 ///
-/// Returns `null` if no summaries are available, or the list of summary
-/// file paths for [AnalysisContextCollectionImpl.librarySummaryPaths].
-Future<List<String>?> _runSummaryCacheStage(
+/// Returns `null` if no summaries are available.
+Future<_SummaryCacheResult?> _runSummaryCacheStage(
   String projectRoot, {
   bool verbose = false,
   bool rebuildCache = false,
@@ -362,15 +365,19 @@ Future<List<String>?> _runSummaryCacheStage(
     await cacheManager.clearCache();
   }
 
-  // Check for missing summaries
+  final generator = SummaryGenerator(
+    cacheManager: cacheManager,
+    dependencyResolver: depResolver,
+  );
+
+  // Generate SDK summary if missing
+  await generator.generateSdkSummary();
+
+  // Check for missing package summaries
   final missing = await cacheManager.findMissingSummaries(cacheable);
 
   if (missing.isNotEmpty) {
     print('Generating ${missing.length} missing summaries...');
-    final generator = SummaryGenerator(
-      cacheManager: cacheManager,
-      dependencyResolver: depResolver,
-    );
 
     final result = await generator.generateMissingSummaries(
       missing,
@@ -403,13 +410,28 @@ Future<List<String>?> _runSummaryCacheStage(
     }
   }
 
-  if (summaryPaths.isEmpty) {
+  // Get SDK summary path
+  final sdkSummaryPath = cacheManager.getSdkSummaryPath();
+  final hasSdkSummary = await File(sdkSummaryPath).exists();
+
+  if (summaryPaths.isEmpty && !hasSdkSummary) {
     return null;
   }
 
   print('Loading ${summaryPaths.length} cached summaries.');
 
-  return summaryPaths;
+  return _SummaryCacheResult(
+    summaryPaths: summaryPaths.isEmpty ? null : summaryPaths,
+    sdkSummaryPath: hasSdkSummary ? sdkSummaryPath : null,
+  );
+}
+
+/// Result of the summary cache stage.
+class _SummaryCacheResult {
+  final List<String>? summaryPaths;
+  final String? sdkSummaryPath;
+
+  _SummaryCacheResult({this.summaryPaths, this.sdkSummaryPath});
 }
 
 /// Prints cache status for all cacheable dependencies.
@@ -585,14 +607,17 @@ Future<void> _runBuildMode(List<String> args) async {
 
   // Summary caching stage
   List<String>? summaryPaths;
+  String? sdkSummaryPath;
   if (!noCache) {
-    summaryPaths = await _runSummaryCacheStage(
+    final cacheResult = await _runSummaryCacheStage(
       projectRoot,
       verbose: verbose,
       rebuildCache: rebuildCache,
       showCacheStatus: showCacheStatus,
       cacheOnlyPackages: cacheOnlyPackages,
     );
+    summaryPaths = cacheResult?.summaryPaths;
+    sdkSummaryPath = cacheResult?.sdkSummaryPath;
     if (showCacheStatus) {
       exit(0);
     }
@@ -602,6 +627,7 @@ Future<void> _runBuildMode(List<String> args) async {
   final resolver = await StandaloneLibraryResolver.create(
     projectRoot,
     librarySummaryPaths: summaryPaths,
+    sdkSummaryPath: sdkSummaryPath,
   );
 
   try {

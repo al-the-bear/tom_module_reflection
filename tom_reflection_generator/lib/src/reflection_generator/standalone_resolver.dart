@@ -90,11 +90,27 @@ class StandaloneLibraryResolver implements LibraryResolver {
     return StandaloneLibraryResolver._(collection, absolutePath, packageName);
   }
 
-  /// Looks for an existing SDK summary in `.dart_tool/build_resolvers/`.
+  /// Looks for an existing SDK summary.
   ///
+  /// Checks our cache first (`<workspace>/.tom/analyzer-cache/sdk@<version>.sum`),
+  /// then falls back to build_resolvers (`.dart_tool/build_resolvers/sdk.sum`).
   /// Returns the path if found, null otherwise.
   static String? _findSdkSummary(String projectRoot) {
-    final sdkSumPath = p.join(projectRoot, '.dart_tool', 'build_resolvers', 'sdk.sum');
+    // Check our own cache first
+    final dartVersion = Platform.version.split(' ').first;
+    final versionMatch = RegExp(r'^(\d+\.\d+\.\d+)').firstMatch(dartVersion);
+    final version = versionMatch?.group(1) ?? dartVersion;
+    final ourCachePath = p.join(
+      projectRoot, '.tom', 'analyzer-cache', 'sdk@$version.sum',
+    );
+    if (File(ourCachePath).existsSync()) {
+      return ourCachePath;
+    }
+
+    // Fall back to build_resolvers
+    final sdkSumPath = p.join(
+      projectRoot, '.dart_tool', 'build_resolvers', 'sdk.sum',
+    );
     if (File(sdkSumPath).existsSync()) {
       return sdkSumPath;
     }

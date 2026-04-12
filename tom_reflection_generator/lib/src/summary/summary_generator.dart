@@ -7,6 +7,8 @@ import 'dart:typed_data';
 
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/sdk/build_sdk_summary.dart';
+import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer/src/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/src/dart/element/element.dart';
 import 'package:analyzer/src/summary2/bundle_writer.dart';
@@ -140,6 +142,52 @@ class SummaryGenerator {
     final sizeKB = (summaryBytes.length / 1024).toStringAsFixed(1);
     stdout.writeln('    Cached ${dependency.name}@${dependency.version} '
         '(${sizeKB} KB)');
+
+    return true;
+  }
+
+  /// Generates the Dart SDK summary and stores it in the cache.
+  ///
+  /// Uses the analyzer's `buildSdkSummary` API to create a summary of
+  /// all `dart:` libraries. For Flutter projects, this also includes
+  /// `dart:ui` via the sky_engine embedder.
+  ///
+  /// Returns `true` if the summary was generated, `false` if already cached.
+  Future<bool> generateSdkSummary() async {
+    if (await cacheManager.hasSdkSummary()) {
+      return false;
+    }
+
+    final sdkPath = p.dirname(p.dirname(Platform.resolvedExecutable));
+    stdout.writeln('  Generating SDK summary (Dart ${cacheManager.dartSdkVersion})...');
+
+    // Check for Flutter embedder (sky_engine provides dart:ui)
+    String? embedderYamlPath;
+    final flutterSdkPath = await dependencyResolver.getFlutterSdkPath();
+    if (flutterSdkPath != null) {
+      final dartUiPath = p.normalize(
+        p.join(flutterSdkPath, 'bin', 'cache', 'pkg', 'sky_engine', 'lib'),
+      );
+      final embedderFile = File(p.join(dartUiPath, '_embedder.yaml'));
+      if (embedderFile.existsSync()) {
+        embedderYamlPath = embedderFile.path;
+      }
+    }
+
+    final summaryBytes = await buildSdkSummary(
+      sdkPath: sdkPath,
+      resourceProvider: PhysicalResourceProvider.INSTANCE,
+      embedderYamlPath: embedderYamlPath,
+    );
+
+    await cacheManager.writeSummary(
+      'sdk',
+      cacheManager.dartSdkVersion,
+      summaryBytes,
+    );
+
+    final sizeKB = (summaryBytes.length / 1024).toStringAsFixed(1);
+    stdout.writeln('  Cached SDK summary ($sizeKB KB)');
 
     return true;
   }

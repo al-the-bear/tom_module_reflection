@@ -72,6 +72,18 @@ class SummaryCacheManager {
     return p.join(cacheDirectory, '$sanitizedName@$sanitizedVersion.sum');
   }
 
+  /// Returns the cache file path for the SDK summary.
+  ///
+  /// Format: `<cache-dir>/sdk@{dart-version}.sum`
+  String getSdkSummaryPath() {
+    return getCachePath('sdk', dartSdkVersion);
+  }
+
+  /// Checks if a valid SDK summary exists in our cache.
+  Future<bool> hasSdkSummary() async {
+    return hasSummary('sdk', dartSdkVersion);
+  }
+
   /// Sanitizes a string for use in a filename.
   String _sanitizeFilename(String name) {
     // Replace any characters that might be problematic in filenames

@@ -293,7 +293,7 @@ class DependencyResolver {
     if (dependency.source != 'sdk') return null;
 
     if (dependency.sdkName == 'flutter') {
-      final sdkPath = await _getFlutterSdkPath();
+      final sdkPath = await getFlutterSdkPath();
       if (sdkPath == null) return null;
 
       // sky_engine and flutter_gpu are in bin/cache/pkg/, not packages/
@@ -322,7 +322,7 @@ class DependencyResolver {
   /// Tries multiple methods:
   /// 1. FLUTTER_ROOT environment variable
   /// 2. Resolve `which flutter` to find SDK path
-  Future<String?> _getFlutterSdkPath() async {
+  Future<String?> getFlutterSdkPath() async {
     // Try FLUTTER_ROOT environment variable first
     final flutterRoot = Platform.environment['FLUTTER_ROOT'];
     if (flutterRoot != null && flutterRoot.isNotEmpty) {

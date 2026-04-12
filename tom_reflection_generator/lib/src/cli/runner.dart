@@ -148,6 +148,11 @@ Future<void> _runGenerateMode(List<String> args) async {
     }
   }
   
+  // Parse cache options
+  final noCache = args.contains('--no-cache');
+  final rebuildCache = args.contains('--rebuild-cache');
+  final showCacheStatus = args.contains('--show-cache-status');
+
   // Normalize the project root path
   projectRoot = p.normalize(projectRoot);
 
@@ -155,8 +160,26 @@ Future<void> _runGenerateMode(List<String> args) async {
     print('Project root: $projectRoot');
   }
 
+  // Summary caching stage
+  List<String>? summaryPaths;
+  if (!noCache) {
+    summaryPaths = await _runSummaryCacheStage(
+      projectRoot,
+      verbose: verbose,
+      rebuildCache: rebuildCache,
+      showCacheStatus: showCacheStatus,
+    );
+    if (showCacheStatus) {
+      // --show-cache-status is info-only, exit after displaying
+      exit(0);
+    }
+  }
+
   // Create the standalone resolver
-  final resolver = await StandaloneLibraryResolver.create(projectRoot);
+  final resolver = await StandaloneLibraryResolver.create(
+    projectRoot,
+    librarySummaryPaths: summaryPaths,
+  );
 
   try {
     // Collect all files to process
@@ -264,6 +287,142 @@ Future<void> _collectDartFilesFromDirectory(String dirPath, Set<String> files) a
       }
     }
   }
+}
+
+/// Runs the summary cache stage: resolves dependencies, generates missing
+/// summaries, and returns the list of cached `.sum` file paths to pass to
+/// the analyzer.
+///
+/// Returns `null` if no summaries are available, or the list of summary
+/// file paths for [AnalysisContextCollectionImpl.librarySummaryPaths].
+Future<List<String>?> _runSummaryCacheStage(
+  String projectRoot, {
+  bool verbose = false,
+  bool rebuildCache = false,
+  bool showCacheStatus = false,
+}) async {
+  final cacheManager = SummaryCacheManager(projectRoot);
+  final depResolver = DependencyResolver();
+
+  // Resolve dependencies
+  List<PackageDependency> dependencies;
+  try {
+    dependencies = await depResolver.resolveVersionedDependencies(projectRoot);
+  } catch (e) {
+    if (verbose) {
+      print('Warning: Could not resolve dependencies for summary caching: $e');
+    }
+    return null;
+  }
+
+  final cacheable = dependencies.where((d) => d.isCacheable).toList();
+
+  if (showCacheStatus) {
+    await _printCacheStatus(cacheManager, cacheable);
+    return null;
+  }
+
+  if (cacheable.isEmpty) {
+    if (verbose) {
+      print('No cacheable dependencies found.');
+    }
+    return null;
+  }
+
+  // Clear cache if --rebuild-cache
+  if (rebuildCache) {
+    print('Clearing summary cache...');
+    await cacheManager.clearCache();
+  }
+
+  // Check for missing summaries
+  final missing = await cacheManager.findMissingSummaries(cacheable);
+
+  if (missing.isNotEmpty) {
+    print('Generating ${missing.length} missing summaries...');
+    final generator = SummaryGenerator(
+      cacheManager: cacheManager,
+      dependencyResolver: depResolver,
+    );
+
+    final result = await generator.generateMissingSummaries(
+      missing,
+      onProgress: (pkg, current, total) {
+        print('  Generating summary ($current/$total): $pkg');
+      },
+    );
+
+    if (result.generated > 0) {
+      print('Generated ${result.generated} summaries.');
+    }
+    if (result.failed > 0) {
+      print('Failed to generate ${result.failed} summaries.');
+      if (verbose) {
+        for (final entry in result.errors.entries) {
+          print('  ${entry.key}: ${entry.value}');
+        }
+      }
+    }
+  } else if (verbose) {
+    print('All ${cacheable.length} summaries are cached.');
+  }
+
+  // Collect available summary file paths
+  final summaryPaths = <String>[];
+  for (final dep in cacheable) {
+    final cachePath = cacheManager.getCachePath(dep.name, dep.version);
+    if (await File(cachePath).exists()) {
+      summaryPaths.add(cachePath);
+    }
+  }
+
+  if (summaryPaths.isEmpty) {
+    return null;
+  }
+
+  if (verbose) {
+    print('Loading ${summaryPaths.length} cached summaries.');
+  }
+
+  return summaryPaths;
+}
+
+/// Prints cache status for all cacheable dependencies.
+Future<void> _printCacheStatus(
+  SummaryCacheManager cacheManager,
+  List<PackageDependency> cacheable,
+) async {
+  final stats = await cacheManager.getStats();
+  print('Summary Cache Status:');
+  print('  Cache directory: ${cacheManager.cacheDirectory}');
+  print('  Total cached: ${stats.summaryCount} files (${_formatBytes(stats.totalSizeBytes)})');
+  print('  Dart SDK version: ${cacheManager.dartSdkVersion}');
+  print('');
+
+  var cached = 0;
+  var missing = 0;
+
+  for (final dep in cacheable) {
+    final hasSummary = await cacheManager.hasSummary(dep.name, dep.version);
+    final status = hasSummary ? 'CACHED' : 'MISSING';
+    if (hasSummary) {
+      cached++;
+    } else {
+      missing++;
+    }
+    print('  [$status] ${dep.name}@${dep.version} (${dep.source})');
+  }
+
+  print('');
+  print('  Summary: $cached cached, $missing missing, '
+      '${cacheable.length} total cacheable');
+}
+
+/// Formats bytes into a human-readable string.
+String _formatBytes(int bytes) {
+  if (bytes < 1024) return '$bytes B';
+  if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+  return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
 }
 
 /// Run in build mode - use build.yaml configuration and/or command-line globs
@@ -393,8 +552,30 @@ Future<void> _runBuildMode(List<String> args) async {
     }
   }
 
+  // Parse cache options
+  final noCache = args.contains('--no-cache');
+  final rebuildCache = args.contains('--rebuild-cache');
+  final showCacheStatus = args.contains('--show-cache-status');
+
+  // Summary caching stage
+  List<String>? summaryPaths;
+  if (!noCache) {
+    summaryPaths = await _runSummaryCacheStage(
+      projectRoot,
+      verbose: verbose,
+      rebuildCache: rebuildCache,
+      showCacheStatus: showCacheStatus,
+    );
+    if (showCacheStatus) {
+      exit(0);
+    }
+  }
+
   // Create the standalone resolver
-  final resolver = await StandaloneLibraryResolver.create(projectRoot);
+  final resolver = await StandaloneLibraryResolver.create(
+    projectRoot,
+    librarySummaryPaths: summaryPaths,
+  );
 
   try {
     // Find all files matching the patterns
@@ -582,6 +763,9 @@ Options:
   --useAllCapabilities
                       Use all capabilities for full reflection instead of
                       capabilities specified in reflector class
+  --no-cache          Disable summary caching for dependencies
+  --rebuild-cache     Force regenerate all cached summaries
+  --show-cache-status Show which packages have cached summaries
   --verbose, -v       Print detailed progress information
   --help, -h          Show this help message
 

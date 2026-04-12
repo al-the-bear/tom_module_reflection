@@ -14,6 +14,7 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/src/dart/analysis/analysis_context_collection.dart';
 import 'package:path/path.dart' as p;
 
 import 'library_resolver.dart';
@@ -41,7 +42,15 @@ class StandaloneLibraryResolver implements LibraryResolver {
   ///
   /// The [projectRoot] should be the absolute path to the project directory
   /// containing pubspec.yaml.
-  static Future<StandaloneLibraryResolver> create(String projectRoot) async {
+  ///
+  /// If [librarySummaryPaths] is provided, the analyzer will load pre-built
+  /// summary files (`.sum`) for the listed packages, skipping full analysis
+  /// of those dependencies. This can dramatically reduce analysis time for
+  /// projects with many stable dependencies.
+  static Future<StandaloneLibraryResolver> create(
+    String projectRoot, {
+    List<String>? librarySummaryPaths,
+  }) async {
     var absolutePath = p.isAbsolute(projectRoot)
         ? projectRoot
         : p.join(Directory.current.path, projectRoot);
@@ -49,9 +58,20 @@ class StandaloneLibraryResolver implements LibraryResolver {
     // Normalize the path (resolve .. and . components)
     absolutePath = p.normalize(absolutePath);
 
-    final collection = AnalysisContextCollection(
-      includedPaths: [absolutePath],
-    );
+    final AnalysisContextCollection collection;
+    if (librarySummaryPaths != null && librarySummaryPaths.isNotEmpty) {
+      // Use AnalysisContextCollectionImpl to pass librarySummaryPaths,
+      // which enables the analyzer to skip full analysis of summarized
+      // packages (they are loaded as InSummarySource).
+      collection = AnalysisContextCollectionImpl(
+        includedPaths: [absolutePath],
+        librarySummaryPaths: librarySummaryPaths,
+      );
+    } else {
+      collection = AnalysisContextCollection(
+        includedPaths: [absolutePath],
+      );
+    }
 
     final packageName = _getPackageName(absolutePath);
 

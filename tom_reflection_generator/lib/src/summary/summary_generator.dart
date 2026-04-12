@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/src/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/src/dart/element/element.dart';
 import 'package:analyzer/src/summary2/bundle_writer.dart';
@@ -216,11 +217,37 @@ class SummaryGenerator {
     return libraries;
   }
 
+  /// Creates a summary bundle from already-resolved library elements.
+  ///
+  /// Uses [BundleWriter] to serialize each library's type information,
+  /// then wraps the result with [PackageBundleBuilder] to create the
+  /// final `.sum` binary format.
+  Uint8List _createSummaryBundle(List<LibraryElement> libraries) {
+    final bundleWriter = BundleWriter();
+    final bundleBuilder = PackageBundleBuilder();
+
+    for (final library in libraries) {
+      bundleWriter.writeLibraryElement(library as LibraryElementImpl);
+
+      // Register the library URI and its fragment (unit) URIs
+      final libraryUri = library.uri.toString();
+      final unitUris = library.fragments
+          .map((fragment) => fragment.source.uri.toString())
+          .toList();
+      bundleBuilder.addLibrary(libraryUri, unitUris);
+    }
+
+    final writerResult = bundleWriter.finish();
+    return bundleBuilder.finish(
+      resolutionBytes: writerResult.resolutionBytes,
+    );
+  }
+
   /// Analyzes a package and creates its summary bundle.
   ///
   /// Creates a temporary [AnalysisContextCollectionImpl] for the package,
   /// resolves all public libraries, and serializes them using
-  /// [BundleWriter] and [PackageBundleBuilder].
+  /// [_createSummaryBundle].
   Future<Uint8List?> _analyzeAndCreateBundle(
     String packagePath,
     List<String> libraryFiles,
@@ -233,9 +260,7 @@ class SummaryGenerator {
         includedPaths: [p.normalize(p.absolute(packagePath))],
       );
 
-      final bundleWriter = BundleWriter();
-      final bundleBuilder = PackageBundleBuilder();
-      var libraryCount = 0;
+      final resolvedLibraries = <LibraryElement>[];
 
       for (final filePath in libraryFiles) {
         try {
@@ -254,17 +279,7 @@ class SummaryGenerator {
             continue;
           }
 
-          // Write the library element to the bundle
-          bundleWriter.writeLibraryElement(libraryElement);
-
-          // Register the library URI and its fragment (unit) URIs
-          final libraryUri = libraryElement.uri.toString();
-          final unitUris = libraryElement.fragments
-              .map((fragment) => fragment.source.uri.toString())
-              .toList();
-          bundleBuilder.addLibrary(libraryUri, unitUris);
-
-          libraryCount++;
+          resolvedLibraries.add(libraryElement);
         } catch (e) {
           // Skip individual library failures — log but continue
           stderr.writeln(
@@ -273,17 +288,11 @@ class SummaryGenerator {
         }
       }
 
-      if (libraryCount == 0) {
+      if (resolvedLibraries.isEmpty) {
         return null;
       }
 
-      // Finalize the bundle
-      final writerResult = bundleWriter.finish();
-      final summaryBytes = bundleBuilder.finish(
-        resolutionBytes: writerResult.resolutionBytes,
-      );
-
-      return summaryBytes;
+      return _createSummaryBundle(resolvedLibraries);
     } finally {
       await collection?.dispose();
     }

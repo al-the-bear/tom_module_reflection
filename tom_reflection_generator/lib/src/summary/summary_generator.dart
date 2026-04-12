@@ -14,6 +14,7 @@ import 'package:analyzer/src/dart/element/element.dart';
 import 'package:analyzer/src/summary2/bundle_writer.dart';
 import 'package:analyzer/src/summary2/package_bundle_format.dart';
 import 'package:path/path.dart' as p;
+import 'package:yaml/yaml.dart';
 
 import 'dependency_resolver.dart';
 import 'package_dependency.dart';
@@ -91,7 +92,11 @@ class SummaryGenerator {
   /// Does nothing if the summary is already cached.
   ///
   /// Throws if the package path cannot be resolved or analysis fails.
-  Future<bool> generateSummary(PackageDependency dependency) async {
+  Future<bool> generateSummary(
+    PackageDependency dependency, {
+    String? sdkSummaryPath,
+    List<String>? librarySummaryPaths,
+  }) async {
     if (!dependency.isCacheable) {
       return false;
     }
@@ -125,6 +130,8 @@ class SummaryGenerator {
       packagePath,
       dependency.name,
       libraryFiles,
+      sdkSummaryPath: sdkSummaryPath,
+      librarySummaryPaths: librarySummaryPaths,
     );
 
     if (summaryBytes == null) {
@@ -194,23 +201,45 @@ class SummaryGenerator {
 
   /// Generates summaries for all dependencies that are missing from the cache.
   ///
+  /// Processes dependencies in topological order (leaves first) so that
+  /// each package's summary is generated with its dependencies' summaries
+  /// already available. This ensures cross-package type references resolve
+  /// correctly instead of becoming `InvalidType`.
+  ///
+  /// Pass [sdkSummaryPath] to provide the SDK summary (including `dart:ui`
+  /// via Flutter embedder) to each package's analysis context.
+  ///
   /// Skips dependencies that are already cached or not cacheable.
   /// Continues processing on individual failures, collecting errors.
   Future<SummaryGenerationResult> generateMissingSummaries(
     List<PackageDependency> dependencies, {
+    String? sdkSummaryPath,
     void Function(String package, int current, int total)? onProgress,
   }) async {
     final cacheable =
         dependencies.where((d) => d.isCacheable).toList();
+
+    // Build topological generation order so dependencies come first
+    final ordered = await _buildGenerationOrder(cacheable);
+
+    // Collect already-cached summary paths as available for new generations
+    final availableSummaries = <String>[];
+    for (final dep in cacheable) {
+      if (await cacheManager.hasSummary(dep.name, dep.version)) {
+        availableSummaries.add(
+          cacheManager.getCachePath(dep.name, dep.version),
+        );
+      }
+    }
 
     var generated = 0;
     var skipped = 0;
     var failed = 0;
     final errors = <String, String>{};
 
-    for (var i = 0; i < cacheable.length; i++) {
-      final dep = cacheable[i];
-      onProgress?.call(dep.name, i + 1, cacheable.length);
+    for (var i = 0; i < ordered.length; i++) {
+      final dep = ordered[i];
+      onProgress?.call(dep.name, i + 1, ordered.length);
 
       // Check if already cached
       if (await cacheManager.hasSummary(dep.name, dep.version)) {
@@ -219,9 +248,19 @@ class SummaryGenerator {
       }
 
       try {
-        final success = await generateSummary(dep);
+        final success = await generateSummary(
+          dep,
+          sdkSummaryPath: sdkSummaryPath,
+          librarySummaryPaths: availableSummaries.isNotEmpty
+              ? List.from(availableSummaries)
+              : null,
+        );
         if (success) {
           generated++;
+          // Add newly generated summary to available list for subsequent packages
+          availableSummaries.add(
+            cacheManager.getCachePath(dep.name, dep.version),
+          );
         } else {
           skipped++;
         }
@@ -309,11 +348,18 @@ class SummaryGenerator {
   ///
   /// Creates a temporary `.dart_tool/package_config.json` to ensure the
   /// analyzer uses proper `package:` URIs instead of `file://` URIs.
+  ///
+  /// If [librarySummaryPaths] is provided, the analyzer loads those summaries
+  /// to resolve cross-package type references. Note: [sdkSummaryPath] is NOT
+  /// passed to the analysis context because individual package contexts cannot
+  /// reliably use a summary-based SDK (the SDK resolves naturally from disk).
   Future<Uint8List?> _analyzeAndCreateBundle(
     String packagePath,
     String packageName,
-    List<String> libraryFiles,
-  ) async {
+    List<String> libraryFiles, {
+    String? sdkSummaryPath,
+    List<String>? librarySummaryPaths,
+  }) async {
     AnalysisContextCollectionImpl? collection;
     final dartToolDir = Directory(p.join(packagePath, '.dart_tool'));
     final packageConfigFile = File(p.join(dartToolDir.path, 'package_config.json'));
@@ -343,10 +389,23 @@ class SummaryGenerator {
 }''';
       packageConfigFile.writeAsStringSync(packageConfig);
 
-      // Create analysis context for the package
-      collection = AnalysisContextCollectionImpl(
-        includedPaths: [p.normalize(p.absolute(packagePath))],
-      );
+      // Create analysis context for the package.
+      // IMPORTANT: When sdkSummaryPath is provided, librarySummaryPaths MUST
+      // also be non-null (even if empty) because the analyzer only creates
+      // SummaryDataStore when librarySummaryPaths != null, and the SDK bundle
+      // is only registered into that store via `summaryData?.addBundle(...)`.
+      // Without a SummaryDataStore, dart:core is not found.
+      if (sdkSummaryPath != null || (librarySummaryPaths != null && librarySummaryPaths.isNotEmpty)) {
+        collection = AnalysisContextCollectionImpl(
+          includedPaths: [p.normalize(p.absolute(packagePath))],
+          sdkSummaryPath: sdkSummaryPath,
+          librarySummaryPaths: librarySummaryPaths ?? const [],
+        );
+      } else {
+        collection = AnalysisContextCollectionImpl(
+          includedPaths: [p.normalize(p.absolute(packagePath))],
+        );
+      }
 
       final resolvedLibraries = <LibraryElement>[];
 
@@ -398,6 +457,107 @@ class SummaryGenerator {
     }
   }
   
+  /// Builds a topological generation order for package summaries.
+  ///
+  /// Reads each package's `pubspec.yaml` to discover its dependencies,
+  /// then uses Kahn's algorithm to produce an order where a package's
+  /// dependencies are always generated before the package itself.
+  ///
+  /// Packages with circular dependencies (rare but possible) are appended
+  /// at the end after all acyclic packages.
+  Future<List<PackageDependency>> _buildGenerationOrder(
+    List<PackageDependency> deps,
+  ) async {
+    final nameToDepMap = <String, PackageDependency>{};
+    for (final dep in deps) {
+      nameToDepMap[dep.name] = dep;
+    }
+
+    // Build dependency graph: dependsOn[A] = {B, C} means A depends on B and C
+    final dependsOn = <String, Set<String>>{};
+    // Reverse graph: dependedBy[B] = {A} means A depends on B
+    final dependedBy = <String, Set<String>>{};
+
+    for (final dep in deps) {
+      final path = await _resolvePackagePath(dep);
+      final pkgDeps =
+          path != null ? _readPackageDependencies(path) : <String>[];
+      final filtered =
+          pkgDeps.where((d) => nameToDepMap.containsKey(d)).toSet();
+      dependsOn[dep.name] = filtered;
+
+      for (final d in filtered) {
+        dependedBy.putIfAbsent(d, () => <String>{}).add(dep.name);
+      }
+    }
+
+    // Kahn's algorithm: start with packages that have no deps in our set
+    final inDegree = <String, int>{};
+    for (final name in nameToDepMap.keys) {
+      inDegree[name] = dependsOn[name]?.length ?? 0;
+    }
+
+    final queue = <String>[
+      for (final entry in inDegree.entries)
+        if (entry.value == 0) entry.key,
+    ]..sort(); // Sorted for deterministic output
+
+    final sorted = <String>[];
+    while (queue.isNotEmpty) {
+      final current = queue.removeAt(0);
+      sorted.add(current);
+
+      for (final dependent in (dependedBy[current] ?? <String>{})) {
+        inDegree[dependent] = inDegree[dependent]! - 1;
+        if (inDegree[dependent] == 0) {
+          // Insert in sorted position for determinism
+          final insertIdx =
+              queue.indexWhere((s) => s.compareTo(dependent) > 0);
+          if (insertIdx < 0) {
+            queue.add(dependent);
+          } else {
+            queue.insert(insertIdx, dependent);
+          }
+        }
+      }
+    }
+
+    // Append any remaining packages (circular deps) at end
+    for (final name in nameToDepMap.keys) {
+      if (!sorted.contains(name)) {
+        sorted.add(name);
+      }
+    }
+
+    return sorted
+        .map((name) => nameToDepMap[name]!)
+        .toList();
+  }
+
+  /// Reads dependency names from a package's `pubspec.yaml`.
+  ///
+  /// Returns dependency names from the `dependencies` section only
+  /// (not `dev_dependencies`).
+  List<String> _readPackageDependencies(String packagePath) {
+    final pubspecFile = File(p.join(packagePath, 'pubspec.yaml'));
+    if (!pubspecFile.existsSync()) return [];
+
+    try {
+      final content = pubspecFile.readAsStringSync();
+      final yaml = loadYaml(content) as YamlMap?;
+      if (yaml == null) return [];
+
+      final deps = <String>[];
+      final dependencies = yaml['dependencies'] as YamlMap?;
+      if (dependencies != null) {
+        deps.addAll(dependencies.keys.cast<String>());
+      }
+      return deps;
+    } catch (_) {
+      return [];
+    }
+  }
+
   /// Extracts the language version from pubspec.yaml environment constraint.
   /// Returns a default version if not found.
   String _getLanguageVersion(String packagePath) {

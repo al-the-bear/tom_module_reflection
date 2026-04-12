@@ -373,14 +373,22 @@ Future<_SummaryCacheResult?> _runSummaryCacheStage(
   // Generate SDK summary if missing
   await generator.generateSdkSummary();
 
+  // Get SDK summary path for use during package summary generation
+  final sdkSummaryPath = cacheManager.getSdkSummaryPath();
+  final hasSdkSummary = await File(sdkSummaryPath).exists();
+
   // Check for missing package summaries
   final missing = await cacheManager.findMissingSummaries(cacheable);
 
   if (missing.isNotEmpty) {
     print('Generating ${missing.length} missing summaries...');
 
+    // Pass ALL cacheable deps (not just missing) so topological sort
+    // has the complete dependency graph. Already-cached deps are skipped
+    // internally but their summary paths are available for new generations.
     final result = await generator.generateMissingSummaries(
-      missing,
+      cacheable,
+      sdkSummaryPath: hasSdkSummary ? sdkSummaryPath : null,
       onProgress: (pkg, current, total) {
         print('  Generating summary ($current/$total): $pkg');
       },
@@ -409,10 +417,6 @@ Future<_SummaryCacheResult?> _runSummaryCacheStage(
       summaryPaths.add(cachePath);
     }
   }
-
-  // Get SDK summary path
-  final sdkSummaryPath = cacheManager.getSdkSummaryPath();
-  final hasSdkSummary = await File(sdkSummaryPath).exists();
 
   if (summaryPaths.isEmpty && !hasSdkSummary) {
     return null;

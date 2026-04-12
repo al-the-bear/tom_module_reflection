@@ -111,8 +111,12 @@ class SummaryGenerator {
     final libraryFiles = _findPublicLibraries(packagePath);
     if (libraryFiles.isEmpty) {
       // No public libraries — nothing to summarize
+      stdout.writeln('    Skipping ${dependency.name}: no public libraries');
       return false;
     }
+
+    stdout.writeln('    Analyzing ${dependency.name}@${dependency.version} '
+        '(${libraryFiles.length} libraries)...');
 
     // Analyze and create summary bundle
     final summaryBytes = await _analyzeAndCreateBundle(
@@ -121,6 +125,7 @@ class SummaryGenerator {
     );
 
     if (summaryBytes == null) {
+      stdout.writeln('    Failed to create bundle for ${dependency.name}');
       return false;
     }
 
@@ -130,6 +135,10 @@ class SummaryGenerator {
       dependency.version,
       summaryBytes,
     );
+
+    final sizeKB = (summaryBytes.length / 1024).toStringAsFixed(1);
+    stdout.writeln('    Cached ${dependency.name}@${dependency.version} '
+        '(${sizeKB} KB)');
 
     return true;
   }

@@ -322,17 +322,18 @@ Future<List<String>?> _runSummaryCacheStage(
   final depResolver = DependencyResolver();
 
   // Resolve dependencies
+  print('Resolving dependencies for summary caching...');
   List<PackageDependency> dependencies;
   try {
     dependencies = await depResolver.resolveVersionedDependencies(projectRoot);
   } catch (e) {
-    if (verbose) {
-      print('Warning: Could not resolve dependencies for summary caching: $e');
-    }
+    print('Warning: Could not resolve dependencies for summary caching: $e');
     return null;
   }
 
   var cacheable = dependencies.where((d) => d.isCacheable).toList();
+  print('Found ${dependencies.length} dependencies '
+      '(${cacheable.length} cacheable).');
 
   // Filter to specific packages if --cache-only was specified
   if (cacheOnlyPackages.isNotEmpty) {
@@ -351,9 +352,7 @@ Future<List<String>?> _runSummaryCacheStage(
   }
 
   if (cacheable.isEmpty) {
-    if (verbose) {
-      print('No cacheable dependencies found.');
-    }
+    print('No cacheable dependencies found.');
     return null;
   }
 
@@ -391,7 +390,7 @@ Future<List<String>?> _runSummaryCacheStage(
         }
       }
     }
-  } else if (verbose) {
+  } else {
     print('All ${cacheable.length} summaries are cached.');
   }
 
@@ -408,9 +407,7 @@ Future<List<String>?> _runSummaryCacheStage(
     return null;
   }
 
-  if (verbose) {
-    print('Loading ${summaryPaths.length} cached summaries.');
-  }
+  print('Loading ${summaryPaths.length} cached summaries.');
 
   return summaryPaths;
 }

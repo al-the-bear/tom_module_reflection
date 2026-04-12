@@ -23,6 +23,7 @@
 /// ```
 library;
 
+export 'src/summary/dependency_resolver.dart';
 export 'src/summary/package_dependency.dart';
 export 'src/summary/summary_cache_manager.dart';
-export 'src/summary/dependency_resolver.dart';
+export 'src/summary/summary_generator.dart';

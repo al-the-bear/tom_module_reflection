@@ -65,7 +65,7 @@ Future<void> runReflectionGeneratorCli(List<String> args) async {
 /// Filters out flags, options, and their values.
 List<String> _extractPositionalArgs(List<String> args) {
   final positionalArgs = <String>[];
-  final optionsWithValues = {'--package', '-p', '--extension', '-e', '--config', '-c'};
+  final optionsWithValues = {'--package', '-p', '--extension', '-e', '--config', '-c', '--cache-only'};
   
   var skipNext = false;
   for (var i = 0; i < args.length; i++) {
@@ -95,6 +95,20 @@ List<String> _extractPositionalArgs(List<String> args) {
   }
   
   return positionalArgs;
+}
+
+/// Parses all `--cache-only PKG` values from [args].
+///
+/// Returns an empty list if no `--cache-only` options are present.
+List<String> _parseCacheOnlyPackages(List<String> args) {
+  final packages = <String>[];
+  for (var i = 0; i < args.length; i++) {
+    if (args[i] == '--cache-only' && i + 1 < args.length) {
+      packages.add(args[i + 1]);
+      i++; // skip the value
+    }
+  }
+  return packages;
 }
 
 /// Run in generate mode - process specific files, directories, or glob patterns
@@ -152,6 +166,7 @@ Future<void> _runGenerateMode(List<String> args) async {
   final noCache = args.contains('--no-cache');
   final rebuildCache = args.contains('--rebuild-cache');
   final showCacheStatus = args.contains('--show-cache-status');
+  final cacheOnlyPackages = _parseCacheOnlyPackages(args);
 
   // Normalize the project root path
   projectRoot = p.normalize(projectRoot);
@@ -168,6 +183,7 @@ Future<void> _runGenerateMode(List<String> args) async {
       verbose: verbose,
       rebuildCache: rebuildCache,
       showCacheStatus: showCacheStatus,
+      cacheOnlyPackages: cacheOnlyPackages,
     );
     if (showCacheStatus) {
       // --show-cache-status is info-only, exit after displaying
@@ -300,6 +316,7 @@ Future<List<String>?> _runSummaryCacheStage(
   bool verbose = false,
   bool rebuildCache = false,
   bool showCacheStatus = false,
+  List<String> cacheOnlyPackages = const [],
 }) async {
   final cacheManager = SummaryCacheManager(projectRoot);
   final depResolver = DependencyResolver();
@@ -315,7 +332,18 @@ Future<List<String>?> _runSummaryCacheStage(
     return null;
   }
 
-  final cacheable = dependencies.where((d) => d.isCacheable).toList();
+  var cacheable = dependencies.where((d) => d.isCacheable).toList();
+
+  // Filter to specific packages if --cache-only was specified
+  if (cacheOnlyPackages.isNotEmpty) {
+    cacheable = cacheable
+        .where((d) => cacheOnlyPackages.contains(d.name))
+        .toList();
+    if (verbose) {
+      print('Filtering to ${cacheable.length} packages: '
+          '${cacheOnlyPackages.join(', ')}');
+    }
+  }
 
   if (showCacheStatus) {
     await _printCacheStatus(cacheManager, cacheable);
@@ -556,6 +584,7 @@ Future<void> _runBuildMode(List<String> args) async {
   final noCache = args.contains('--no-cache');
   final rebuildCache = args.contains('--rebuild-cache');
   final showCacheStatus = args.contains('--show-cache-status');
+  final cacheOnlyPackages = _parseCacheOnlyPackages(args);
 
   // Summary caching stage
   List<String>? summaryPaths;
@@ -565,6 +594,7 @@ Future<void> _runBuildMode(List<String> args) async {
       verbose: verbose,
       rebuildCache: rebuildCache,
       showCacheStatus: showCacheStatus,
+      cacheOnlyPackages: cacheOnlyPackages,
     );
     if (showCacheStatus) {
       exit(0);
@@ -765,6 +795,7 @@ Options:
                       capabilities specified in reflector class
   --no-cache          Disable summary caching for dependencies
   --rebuild-cache     Force regenerate all cached summaries
+  --cache-only PKG    Only cache specific package(s) (repeatable)
   --show-cache-status Show which packages have cached summaries
   --verbose, -v       Print detailed progress information
   --help, -h          Show this help message

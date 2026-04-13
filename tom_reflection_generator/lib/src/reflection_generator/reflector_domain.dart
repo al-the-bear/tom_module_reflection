@@ -2127,9 +2127,11 @@ class _ReflectorDomain {
       } else {
         var node =
             await _getDeclarationAst(element, _resolver) as FormalParameter?;
-        // The node may be null because the element is synthetic, and
-        // then it has no metadata.
-        if (node == null) {
+        // The node may be null because the element is synthetic, or because
+        // it's from a summary-backed library. For synthetic elements, metadata
+        // is empty. For summary-backed elements, _extractMetadataCode has a
+        // fallback path that reads annotations from the element directly.
+        if (node == null && element.isSynthetic) {
           metadataCode = 'const []';
         } else {
           metadataCode = await _extractMetadataCode(
@@ -2169,6 +2171,8 @@ class _ReflectorDomain {
             as FormalParameter?;
     // The node can be null because the declaration is synthetic, e.g.,
     // the parameter of an induced setter; they have no default value.
+    // It is also null for summary-backed elements where the full source
+    // AST is not available.
     if (parameterNode is DefaultFormalParameter &&
         parameterNode.defaultValue != null) {
       return await _extractConstantCode(
@@ -2177,16 +2181,18 @@ class _ReflectorDomain {
         _generatedLibraryId,
         _resolver,
       );
-    } else if (parameterElement is DefaultFormalParameter) {
-      Expression? defaultValue = parameterElement.constantInitializer;
-      if (defaultValue != null) {
-        return await _extractConstantCode(
-          defaultValue,
-          importCollector,
-          _generatedLibraryId,
-          _resolver,
-        );
-      }
+    }
+    // Fallback: use the element's constant initializer directly.
+    // This works for summary-backed elements where full AST resolution
+    // isn't available but the initializer was deserialized from the summary.
+    Expression? constantInit = parameterElement.constantInitializer;
+    if (constantInit != null) {
+      return await _extractConstantCode(
+        constantInit,
+        importCollector,
+        _generatedLibraryId,
+        _resolver,
+      );
     }
     return '';
   }

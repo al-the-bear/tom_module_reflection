@@ -174,7 +174,31 @@ Future<String> _extractMetadataCode(
     );
   }
   
-  if (metadata == null || metadata.isEmpty) return 'const []';
+  if (metadata == null || metadata.isEmpty) {
+    // Fallback: use element-level annotations from summary data.
+    // Summary-backed elements don't support full AST resolution via
+    // getResolvedLibraryByElement, but their ElementAnnotation objects
+    // contain deserialized annotation AST nodes from the .sum file.
+    final elementAnnotations = element.metadata.annotations;
+    if (elementAnnotations.isEmpty) return 'const []';
+
+    var metadataParts = <String>[];
+    for (var elementAnnotation in elementAnnotations) {
+      if (elementAnnotation is ElementAnnotationImpl) {
+        String? annotationCode = await _processAnnotation(
+          elementAnnotation.annotationAst,
+          element,
+          resolver,
+          importCollector,
+          dataId,
+        );
+        if (annotationCode != null) {
+          metadataParts.add(annotationCode);
+        }
+      }
+    }
+    return _formatAsConstList('Object', metadataParts);
+  }
 
   // Process each annotation
   var metadataParts = <String>[];

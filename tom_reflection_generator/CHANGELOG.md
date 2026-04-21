@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1
+
+- **Bug fix**: Fixed incorrect prefix assignment for mixin-variant types
+  in `NonGenericClassMirrorImpl` generation. When a type is a synthetic
+  mixin application (e.g. `TomFormStringField with TomGenericFieldDecorationMixin`),
+  the generic type parameter now uses the prefix for the *superclass*'s
+  library rather than the synthetic `MixinApplication`'s library. Previously
+  this caused `'SomeType' isn't a type` compile errors after regeneration.
+
 ## 1.1.0
 
 - **Standalone CLI**: Added analyzer summary caching for 26x faster generation

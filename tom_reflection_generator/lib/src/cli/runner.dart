@@ -26,6 +26,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart' as p;
+// runSummaryCacheStage is re-exported by this package's summary.dart
+// (which itself re-exports `package:tom_analyzer_shared`).
 import 'package:tom_reflection_generator/tom_reflection_generator.dart';
 import 'package:yaml/yaml.dart';
 
@@ -179,7 +181,7 @@ Future<void> _runGenerateMode(List<String> args) async {
   List<String>? summaryPaths;
   String? sdkSummaryPath;
   if (!noCache) {
-    final cacheResult = await _runSummaryCacheStage(
+    final cacheResult = await runSummaryCacheStage(
       projectRoot,
       verbose: verbose,
       rebuildCache: rebuildCache,
@@ -307,173 +309,6 @@ Future<void> _collectDartFilesFromDirectory(String dirPath, Set<String> files) a
       }
     }
   }
-}
-
-/// Runs the summary cache stage: resolves dependencies, generates missing
-/// summaries (including the SDK summary), and returns the cached file paths
-/// to pass to the analyzer.
-///
-/// Returns `null` if no summaries are available.
-Future<_SummaryCacheResult?> _runSummaryCacheStage(
-  String projectRoot, {
-  bool verbose = false,
-  bool rebuildCache = false,
-  bool showCacheStatus = false,
-  List<String> cacheOnlyPackages = const [],
-}) async {
-  final cacheManager = SummaryCacheManager(projectRoot);
-  final depResolver = DependencyResolver();
-
-  // Resolve dependencies
-  print('Resolving dependencies for summary caching...');
-  List<PackageDependency> dependencies;
-  try {
-    dependencies = await depResolver.resolveVersionedDependencies(projectRoot);
-  } catch (e) {
-    print('Warning: Could not resolve dependencies for summary caching: $e');
-    return null;
-  }
-
-  var cacheable = dependencies.where((d) => d.isCacheable).toList();
-  print('Found ${dependencies.length} dependencies '
-      '(${cacheable.length} cacheable).');
-
-  // Filter to specific packages if --cache-only was specified
-  if (cacheOnlyPackages.isNotEmpty) {
-    cacheable = cacheable
-        .where((d) => cacheOnlyPackages.contains(d.name))
-        .toList();
-    if (verbose) {
-      print('Filtering to ${cacheable.length} packages: '
-          '${cacheOnlyPackages.join(', ')}');
-    }
-  }
-
-  if (showCacheStatus) {
-    await _printCacheStatus(cacheManager, cacheable);
-    return null;
-  }
-
-  if (cacheable.isEmpty) {
-    print('No cacheable dependencies found.');
-    return null;
-  }
-
-  // Clear cache if --rebuild-cache
-  if (rebuildCache) {
-    print('Clearing summary cache...');
-    await cacheManager.clearCache();
-  }
-
-  final generator = SummaryGenerator(
-    cacheManager: cacheManager,
-    dependencyResolver: depResolver,
-  );
-
-  // Generate SDK summary if missing
-  await generator.generateSdkSummary();
-
-  // Get SDK summary path for use during package summary generation
-  final sdkSummaryPath = cacheManager.getSdkSummaryPath();
-  final hasSdkSummary = await File(sdkSummaryPath).exists();
-
-  // Check for missing package summaries
-  final missing = await cacheManager.findMissingSummaries(cacheable);
-
-  if (missing.isNotEmpty) {
-    print('Generating ${missing.length} missing summaries...');
-
-    // Pass ALL cacheable deps (not just missing) so topological sort
-    // has the complete dependency graph. Already-cached deps are skipped
-    // internally but their summary paths are available for new generations.
-    final result = await generator.generateMissingSummaries(
-      cacheable,
-      sdkSummaryPath: hasSdkSummary ? sdkSummaryPath : null,
-      onProgress: (pkg, current, total) {
-        print('  Generating summary ($current/$total): $pkg');
-      },
-    );
-
-    if (result.generated > 0) {
-      print('Generated ${result.generated} summaries.');
-    }
-    if (result.failed > 0) {
-      print('Failed to generate ${result.failed} summaries.');
-      if (verbose) {
-        for (final entry in result.errors.entries) {
-          print('  ${entry.key}: ${entry.value}');
-        }
-      }
-    }
-  } else {
-    print('All ${cacheable.length} summaries are cached.');
-  }
-
-  // Collect available summary file paths
-  final summaryPaths = <String>[];
-  for (final dep in cacheable) {
-    final cachePath = cacheManager.getCachePath(dep.name, dep.version);
-    if (await File(cachePath).exists()) {
-      summaryPaths.add(cachePath);
-    }
-  }
-
-  if (summaryPaths.isEmpty && !hasSdkSummary) {
-    return null;
-  }
-
-  print('Loading ${summaryPaths.length} cached summaries.');
-
-  return _SummaryCacheResult(
-    summaryPaths: summaryPaths.isEmpty ? null : summaryPaths,
-    sdkSummaryPath: hasSdkSummary ? sdkSummaryPath : null,
-  );
-}
-
-/// Result of the summary cache stage.
-class _SummaryCacheResult {
-  final List<String>? summaryPaths;
-  final String? sdkSummaryPath;
-
-  _SummaryCacheResult({this.summaryPaths, this.sdkSummaryPath});
-}
-
-/// Prints cache status for all cacheable dependencies.
-Future<void> _printCacheStatus(
-  SummaryCacheManager cacheManager,
-  List<PackageDependency> cacheable,
-) async {
-  final stats = await cacheManager.getStats();
-  print('Summary Cache Status:');
-  print('  Cache directory: ${cacheManager.cacheDirectory}');
-  print('  Total cached: ${stats.summaryCount} files (${_formatBytes(stats.totalSizeBytes)})');
-  print('  Dart SDK version: ${cacheManager.dartSdkVersion}');
-  print('');
-
-  var cached = 0;
-  var missing = 0;
-
-  for (final dep in cacheable) {
-    final hasSummary = await cacheManager.hasSummary(dep.name, dep.version);
-    final status = hasSummary ? 'CACHED' : 'MISSING';
-    if (hasSummary) {
-      cached++;
-    } else {
-      missing++;
-    }
-    print('  [$status] ${dep.name}@${dep.version} (${dep.source})');
-  }
-
-  print('');
-  print('  Summary: $cached cached, $missing missing, '
-      '${cacheable.length} total cacheable');
-}
-
-/// Formats bytes into a human-readable string.
-String _formatBytes(int bytes) {
-  if (bytes < 1024) return '$bytes B';
-  if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-  return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
 }
 
 /// Run in build mode - use build.yaml configuration and/or command-line globs
@@ -613,7 +448,7 @@ Future<void> _runBuildMode(List<String> args) async {
   List<String>? summaryPaths;
   String? sdkSummaryPath;
   if (!noCache) {
-    final cacheResult = await _runSummaryCacheStage(
+    final cacheResult = await runSummaryCacheStage(
       projectRoot,
       verbose: verbose,
       rebuildCache: rebuildCache,

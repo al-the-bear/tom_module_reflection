@@ -15,6 +15,11 @@ dependencies:
   logging: ^1.3.0
   path: ^1.9.0
   pub_semver: ^2.2.0
+  # tom_analyzer_shared provides the shared analyzer summary-cache
+  # infrastructure (SummaryCacheManager, DependencyResolver,
+  # SummaryGenerator, runSummaryCacheStage) reused by both this
+  # generator and tom_d4rt_generator.
+  tom_analyzer_shared: ^0.1.0
   tom_reflection: ^1.0.1
   yaml: ^3.1.2
 

@@ -3,6 +3,13 @@
 /// This library provides utilities for caching analyzer summaries
 /// to speed up repeated reflection generation runs.
 ///
+/// The implementation lives in [`package:tom_analyzer_shared`][shared]
+/// and is reused by other code generators (e.g. `tom_d4rt_generator`).
+/// This file is kept as a stable re-export so existing imports of
+/// `package:tom_reflection_generator/summary.dart` continue to work.
+///
+/// [shared]: https://pub.dev/packages/tom_analyzer_shared
+///
 /// ## Usage
 ///
 /// ```dart
@@ -23,7 +30,4 @@
 /// ```
 library;
 
-export 'src/summary/dependency_resolver.dart';
-export 'src/summary/package_dependency.dart';
-export 'src/summary/summary_cache_manager.dart';
-export 'src/summary/summary_generator.dart';
+export 'package:tom_analyzer_shared/tom_analyzer_shared.dart';

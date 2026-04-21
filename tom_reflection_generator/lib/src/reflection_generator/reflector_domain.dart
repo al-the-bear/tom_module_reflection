@@ -1224,10 +1224,20 @@ class _ReflectorDomain {
     }
     String plainName = classDomain._simpleName;
     // Handle mixin application names which contain " with " keyword
-    // or start with "." - extract just the base class name
+    // or start with "." - extract just the base class name.
+    //
+    // When we do this, `plainName` ends up as the simple name of the
+    // *superclass* (the base class), not of the synthetic MixinApplication
+    // element itself.  The prefix must therefore come from the superclass's
+    // library, not from `interfaceElement.library` (which is the library of
+    // the class that *applies* the mixin and may be a completely different
+    // package).  Track whether we entered either extraction branch so we can
+    // choose the right library below.
+    bool _extractedSuperclassName = false;
     if (plainName.startsWith(".")) {
       // Format: ".BaseClass with Mixin1, Mixin2" - extract "BaseClass"
       plainName = plainName.substring(1, plainName.indexOf(" "));
+      _extractedSuperclassName = true;
       log.fine(
         '[class_mirror.mixin_name.shortened] '
         'Shortened name to $plainName from ${classDomain._simpleName} '
@@ -1239,16 +1249,35 @@ class _ReflectorDomain {
       final baseClassQualified = plainName.substring(0, withIndex);
       // Get just the simple name (last segment after the last dot)
       final lastDotIndex = baseClassQualified.lastIndexOf(".");
-      plainName = lastDotIndex >= 0 
-          ? baseClassQualified.substring(lastDotIndex + 1) 
+      plainName = lastDotIndex >= 0
+          ? baseClassQualified.substring(lastDotIndex + 1)
           : baseClassQualified;
+      _extractedSuperclassName = true;
       log.fine(
         '[class_mirror.mixin_name.extracted] '
         'Extracted base class $plainName from mixin application '
         '${classDomain._simpleName} ($location)',
       );
     }
-    String prefix = importCollector._getPrefix(interfaceElement.library);
+    // For mixin-application types the prefix must reflect where the
+    // *superclass* is defined, not where the synthetic MixinApplication lives.
+    // Walk up through any chained MixinApplications to reach the real class.
+    String prefix;
+    if (_extractedSuperclassName && interfaceElement is MixinApplication) {
+      InterfaceElement root = interfaceElement.superclass;
+      while (root is MixinApplication) {
+        root = root.superclass;
+      }
+      prefix = importCollector._getPrefix(root.library);
+      log.fine(
+        '[class_mirror.mixin_prefix.corrected] '
+        'Using superclass library (${root.library.name}) prefix for '
+        '$plainName instead of MixinApplication library '
+        '(${interfaceElement.library.name}) ($location)',
+      );
+    } else {
+      prefix = importCollector._getPrefix(interfaceElement.library);
+    }
     // Exclude types that can't be used as type arguments with Object bound:
     // - Private types (start with _)
     // - Future, FutureOr (special handling / async types)

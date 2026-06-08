@@ -2,3 +2,4 @@ project_id: RFLT
 name: reflect-test
 description: >-
   Reflection test project.
+license: BSD-3-Clause

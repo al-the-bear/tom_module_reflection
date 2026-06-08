@@ -2,3 +2,4 @@ project_id: RFLG
 name: reflectgen
 description: >-
   Reflection code generator.
+license: BSD-3-Clause

@@ -2,3 +2,4 @@ project_id: ANAM
 name: analyzer-model
 description: >-
   Analyzer data models.
+license: BSD-3-Clause

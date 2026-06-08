@@ -2,3 +2,4 @@ project_id: ANA
 name: analyzer
 description: >-
   Dart code analyzer.
+license: BSD-3-Clause

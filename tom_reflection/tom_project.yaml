@@ -2,3 +2,4 @@ project_id: RFL
 name: reflection
 description: >-
   Runtime reflection library.
+license: BSD-3-Clause

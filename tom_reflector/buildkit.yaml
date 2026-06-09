@@ -9,7 +9,7 @@ compiler:
     - pipeline:
       - shell mkdir -p $TOM_BINARY_PATH/%{target-platform-vs}
       - shell dart compile exe %{file} --target-os=%{dart-target-os} --target-arch=%{dart-target-arch} -o $TOM_BINARY_PATH/%{target-platform-vs}/%{file.name}
-      files: bin/reflector.dart
+      files: [bin/reflector.dart, bin/reflection_analyzer.dart]
       targets: [darwin-arm64, linux-x64, linux-arm64, linux-armhf]
       platforms: [darwin-arm64]
 
@@ -17,13 +17,13 @@ compiler:
     - pipeline:
       - shell mkdir -p $TOM_BINARY_PATH/%{target-platform-vs}
       - shell dart compile exe %{file} --target-os=%{dart-target-os} --target-arch=%{dart-target-arch} -o $TOM_BINARY_PATH/%{target-platform-vs}/%{file.name}
-      files: bin/reflector.dart
+      files: [bin/reflector.dart, bin/reflection_analyzer.dart]
       platforms: [darwin-x64, linux-*]
 
     # Windows - compile for self only
     - pipeline:
       - shell dart compile exe %{file} --target-os=%{dart-target-os} --target-arch=%{dart-target-arch} -o $TOM_BINARY_PATH/win32-x64/%{file.name}.exe
-      files: bin/reflector.dart
+      files: [bin/reflector.dart, bin/reflection_analyzer.dart]
       platforms: [win32-*]
 
   postcompile:

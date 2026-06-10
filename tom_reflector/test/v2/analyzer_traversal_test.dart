@@ -12,6 +12,7 @@ import 'package:test/test.dart';
 import 'package:tom_build_base/tom_build_base_v2.dart';
 import 'package:tom_reflector/src/v2/analyzer_tool.dart';
 import 'package:tom_reflector/src/v2/analyzer_executor.dart';
+import 'package:tom_reflector/src/v2/reflection_analyzer_tool.dart';
 import 'package:tom_reflector/src/v2/reflector_tool.dart';
 import 'package:tom_reflector/src/v2/reflector_executor.dart';
 
@@ -94,7 +95,9 @@ void main() {
 
   group('REF-TOOL: Reflector ToolDefinition', () {
     test('REF-TOOL-1: has correct name and mode', () {
-      expect(reflectorTool.name, equals('tom_reflector'));
+      // The tool is named `reflector` (the `bin/reflector.dart` entrypoint),
+      // distinct from the `tom_reflector` package that hosts it.
+      expect(reflectorTool.name, equals('reflector'));
       expect(reflectorTool.mode, equals(ToolMode.singleCommand));
     });
 
@@ -303,6 +306,67 @@ void main() {
         final result = await runner
             .run(['--list', '--scan', tempDir.path, '--not-recursive']);
         expect(result.success, isTrue);
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    });
+  });
+
+  // ===========================================================================
+  // Reflection Analyzer Executor — output writing
+  // ===========================================================================
+
+  group('RANZ-OUT: Reflection Analyzer output writing', () {
+    test('RANZ-OUT-1: creates the output parent dir when it does not exist',
+        () async {
+      // A package without authored docs has no `doc/` directory yet; the
+      // analyzer must create the output's parent before writing (regression:
+      // packages without a `doc/` folder previously failed with
+      // PathNotFoundException).
+      final tempDir =
+          await Directory.systemTemp.createTemp('reflection_analyzer_out_');
+      try {
+        await File(p.join(tempDir.path, 'pubspec.yaml')).writeAsString('''
+name: ra_out_test
+version: 1.0.0
+environment:
+  sdk: ^3.0.0
+''');
+        await File(p.join(tempDir.path, 'lib', 'ra_out_test.dart'))
+            .create(recursive: true);
+        await File(p.join(tempDir.path, 'lib', 'ra_out_test.dart'))
+            .writeAsString('/// A documented public class.\nclass Widget {}\n');
+
+        // Resolve the SDK-only dependencies so the analyzer can run (offline).
+        final pubGet = await Process.run(
+          Platform.resolvedExecutable,
+          ['pub', 'get'],
+          workingDirectory: tempDir.path,
+        );
+        expect(pubGet.exitCode, 0, reason: 'pub get: ${pubGet.stderr}');
+
+        // Output into a `doc/` subdir that does not exist yet.
+        final outPath = p.join(tempDir.path, 'doc', 'analyzer_analysis.json');
+        expect(File(outPath).existsSync(), isFalse);
+
+        final runner = ToolRunner(
+          tool: reflectionAnalyzerTool,
+          executors: createReflectionAnalyzerExecutors(),
+          output: StringBuffer(),
+        );
+        final result = await runner.run([
+          '--scan',
+          tempDir.path,
+          '--output',
+          outPath,
+          '--format',
+          'json',
+        ]);
+
+        expect(result.success, isTrue);
+        expect(File(outPath).existsSync(), isTrue,
+            reason: 'the dump must be written even with no pre-existing doc/');
+        expect(File(outPath).readAsStringSync(), contains('Widget'));
       } finally {
         await tempDir.delete(recursive: true);
       }

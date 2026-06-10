@@ -121,7 +121,11 @@ Future<bool> _processProject({
       : YamlSerializer.encode(analysis);
 
   if (config.outputFile != null) {
-    await File(config.outputFile!).writeAsString(content);
+    final outputFile = File(config.outputFile!);
+    // Create the output's parent (e.g. `doc/`) — packages without authored
+    // docs have no `doc/` dir yet, and writing would otherwise fail.
+    await outputFile.parent.create(recursive: true);
+    await outputFile.writeAsString(content);
     if (verbose) {
       final displayPath = p.relative(projectPath, from: executionRoot);
       print('  $displayPath -> ${config.outputFile}');

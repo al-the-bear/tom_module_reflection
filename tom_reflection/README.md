@@ -1,8 +1,9 @@
 # tom_reflection
 
 > Part of the Tom Framework reflection toolkit. Derived from the
-> [`reflectable`](https://pub.dev/packages/reflectable) package
-> (© 2015 the Dart project authors, BSD 3-Clause); Tom-specific refactoring,
+> [`reflectable`](https://pub.dev/packages/reflectable) package — originally
+> created by Erik Ernst and the Dart team (© 2015 the Dart project authors,
+> BSD 3-Clause); Tom-specific refactoring,
 > fixes and enhancements © 2026 Peter Nicolai Alexis Kyaw. See
 > [`LICENSE`](LICENSE).
 
@@ -378,6 +379,7 @@ see the repo [`README`](../README.md) for when to use which.
 ## License
 
 BSD 3-Clause. This package is a fork of
-[`reflectable`](https://pub.dev/packages/reflectable) and **retains the upstream
-copyright** (© 2015 the Dart project authors) alongside Tom's modifications
+[`reflectable`](https://pub.dev/packages/reflectable) — originally created by
+Erik Ernst and the Dart team — and **retains the upstream copyright**
+(© 2015 the Dart project authors) alongside Tom's modifications
 (© 2026 Peter Nicolai Alexis Kyaw). See [`LICENSE`](LICENSE).

@@ -1,8 +1,9 @@
 # tom_reflection_generator
 
 > Part of the Tom Framework reflection toolkit. Derived from the
-> [`reflectable`](https://pub.dev/packages/reflectable) package
-> (© 2015 the Dart project authors, BSD 3-Clause); Tom-specific refactoring,
+> [`reflectable`](https://pub.dev/packages/reflectable) package — originally
+> created by Erik Ernst and the Dart team (© 2015 the Dart project authors,
+> BSD 3-Clause); Tom-specific refactoring,
 > fixes and enhancements © 2026 Peter Nicolai Alexis Kyaw. See
 > [`LICENSE`](LICENSE).
 
@@ -298,6 +299,7 @@ own generator emitting `*.r.dart` — see the repo [`README`](../README.md).
 ## License
 
 BSD 3-Clause. Derived from
-[`reflectable`](https://pub.dev/packages/reflectable); retains the upstream
-copyright (© 2015 the Dart project authors) alongside Tom's modifications
+[`reflectable`](https://pub.dev/packages/reflectable) — originally created by
+Erik Ernst and the Dart team — retaining the upstream copyright
+(© 2015 the Dart project authors) alongside Tom's modifications
 (© 2026 Peter Nicolai Alexis Kyaw). See [`LICENSE`](LICENSE).

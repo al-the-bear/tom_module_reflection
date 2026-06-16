@@ -258,6 +258,13 @@ its own generator emitting `*.reflection.dart`.
 - Design (pre-rename `tom_analyzer`): [`doc/tom_analyzer_design.md`](doc/tom_analyzer_design.md)
 - Analyzer element API: [`doc/analyzer_element_api.md`](doc/analyzer_element_api.md)
 
+### Runnable samples (engine 2)
+
+- Parser mode (no codegen): [`reflector_parser_introduction_sample`](../tom_reflection_samples/reflector_parser_introduction_sample/README.md)
+  → [`reflector_parser_advanced_sample`](../tom_reflection_samples/reflector_parser_advanced_sample/README.md)
+- Codegen mode (`*.r.dart`): [`reflector_reflection_introduction_sample`](../tom_reflection_samples/reflector_reflection_introduction_sample/README.md)
+  → [`reflector_reflection_advanced_sample`](../tom_reflection_samples/reflector_reflection_advanced_sample/README.md)
+
 > **Naming note:** some `doc/` files predate the `tom_analyzer → tom_reflector`
 > rename and still say "tom_analyzer"/"tom_analyzer_model". Read those names as
 > the pre-rename identity of `tom_reflector`/`tom_reflector_model`.

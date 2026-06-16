@@ -220,6 +220,12 @@ tom_reflector         analyzer engine + `reflector` CLI → AnalysisResult + *.r
 ([`tom_reflection`](../tom_reflection/README.md)) is a separate technology — see
 the repo [`README`](../README.md).
 
+The model is exercised end-to-end by the engine-2 parser samples —
+[`reflector_parser_introduction_sample`](../tom_reflection_samples/reflector_parser_introduction_sample/README.md)
+(walk + JSON round-trip) and
+[`reflector_parser_advanced_sample`](../tom_reflection_samples/reflector_parser_advanced_sample/README.md)
+(type resolution, cycle-safe IDs, YAML).
+
 ## Status
 
 - **Version:** 1.0.0 (`publish_to: none`, internal workspace package).

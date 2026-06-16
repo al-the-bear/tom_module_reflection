@@ -11,13 +11,20 @@ advanced. Engine 1 (runtime mirrors) first, then engine 2 (build-time model).
 
 | Sample | Engine | Demonstrates |
 |--------|--------|--------------|
-| `reflection_introduction_sample` | 1 | Annotate → generate → reflect → invoke; read a getter. |
-| `reflection_advanced_sample` | 1 | Declarations, `newInstance`, static members, type relations, generics & mixins. |
-| `reflection_capability_sample` | 1 | How capabilities gate generated code; minimal vs `useAllCapabilities`; pattern capabilities. |
-| `reflector_parser_introduction_sample` | 2 | Analyze sources → `AnalysisResult` → JSON round-trip → walk the model. |
-| `reflector_reflection_introduction_sample` | 2 | Generate `*.r.dart` and consume the reflection at runtime. |
-| `reflector_parser_advanced_sample` | 2 | Deep model dive: type-argument resolution, annotations, mixins/extensions, cycle-safe IDs, YAML. |
-| `reflector_reflection_advanced_sample` | 2 | Entry-point reachability with filters, transitive resolution, coverage config. |
+| [`reflection_introduction_sample`](reflection_introduction_sample/README.md) | 1 | Annotate → generate → reflect → invoke; read a getter. |
+| [`reflection_advanced_sample`](reflection_advanced_sample/README.md) | 1 | Declarations, `newInstance`, static members, type relations, generics & mixins. |
+| [`reflection_capability_sample`](reflection_capability_sample/README.md) | 1 | How capabilities gate generated code; minimal vs `useAllCapabilities`; pattern capabilities. |
+| [`reflector_parser_introduction_sample`](reflector_parser_introduction_sample/README.md) | 2 | Analyze sources → `AnalysisResult` → JSON round-trip → walk the model. |
+| [`reflector_reflection_introduction_sample`](reflector_reflection_introduction_sample/README.md) | 2 | Generate `*.r.dart` and consume the reflection at runtime. |
+| [`reflector_parser_advanced_sample`](reflector_parser_advanced_sample/README.md) | 2 | Deep model dive: type-argument resolution, annotations, mixins/extensions, cycle-safe IDs, YAML. |
+| [`reflector_reflection_advanced_sample`](reflector_reflection_advanced_sample/README.md) | 2 | Entry-point reachability with filters, transitive resolution, coverage config. |
+
+Each sample's `example/README.md` indexes its runnable scenarios; run the whole
+set from a sample root with `dart run bin/run_example.dart`. The engine packages
+are one hop up: engine 1 → [`tom_reflection`](../tom_reflection/README.md) /
+[`tom_reflection_generator`](../tom_reflection_generator/README.md), engine 2 →
+[`tom_reflector`](../tom_reflector/README.md) /
+[`tom_reflector_model`](../tom_reflector_model/README.md).
 
 ## Sample project layout
 
@@ -37,7 +44,8 @@ Engine-1 samples depend on the published `tom_reflection` (`^1.0.1`) plus the
 `tom_reflection_generator` (`^1.1.1`) build step; engine-2 samples depend on the
 in-workspace `tom_reflector` by path.
 
-> **Status:** the seven sub-projects are **scaffolded** — each resolves with
-> `dart pub get` and ships a placeholder `bin/run_example.dart`. The runnable
-> scenarios and long-form tutorial READMEs are built out per the quest plan
-> (`readme_and_example_plan.md`, steps 8–14).
+> **Status:** all seven sub-projects are **built out** — each resolves with
+> `dart pub get`, ships a long-form tutorial `README.md`, an `example/` tree of
+> runnable scenarios with its own index `README.md`, and a working
+> `bin/run_example.dart` aggregator (pass/fail tally, non-zero exit). Smoke-test
+> any sample with `dart run bin/run_example.dart` from its root.

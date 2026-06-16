@@ -283,6 +283,7 @@ own generator emitting `*.r.dart` — see the repo [`README`](../README.md).
 - Analyzer summary caching: [`doc/analyzer_summary_integration.md`](doc/analyzer_summary_integration.md)
 - Test status: [`doc/reflection_test_result.md`](doc/reflection_test_result.md)
 - Runtime library it generates for: [`../tom_reflection/README.md`](../tom_reflection/README.md)
+- Capability gating in action: [`reflection_capability_sample`](../tom_reflection_samples/reflection_capability_sample/README.md)
 
 ## Status
 

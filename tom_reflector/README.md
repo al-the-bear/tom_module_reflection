@@ -1,7 +1,13 @@
 # tom_reflector
 
-> Part of the Tom Framework reflection toolkit — an original analyzer-based
-> build-time reflection engine (BSD 3-Clause). See [`LICENSE`](LICENSE).
+> Part of the Tom Framework reflection toolkit — an **original** analyzer-based
+> build-time reflection engine © 2024–2026 Peter Nicolai Alexis Kyaw
+> (BSD 3-Clause). Unlike its engine-1 siblings
+> [`tom_reflection`](../tom_reflection/README.md) /
+> [`tom_reflection_generator`](../tom_reflection_generator/README.md) — which are
+> derived from the [`reflectable`](https://pub.dev/packages/reflectable) package
+> (© 2015 the Dart project authors) — `tom_reflector` shares **no lineage or
+> code** with `reflectable`. See [`LICENSE`](LICENSE).
 
 Build-time, **structural** reflection for Dart. `tom_reflector` is **engine 2**
 of the Tom reflection toolkit: instead of mirrors on live objects, it walks the

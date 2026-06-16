@@ -1,8 +1,9 @@
 # reflection_advanced_sample — examples
 
 > Part of the Tom Framework reflection toolkit. Derived from the
-> [`reflectable`](https://pub.dev/packages/reflectable) package
-> (© 2015 the Dart project authors, BSD 3-Clause); Tom-specific refactoring,
+> [`reflectable`](https://pub.dev/packages/reflectable) package — originally
+> created by Erik Ernst and the Dart team (© 2015 the Dart project authors,
+> BSD 3-Clause); Tom-specific refactoring,
 > fixes and enhancements © 2026 Peter Nicolai Alexis Kyaw. See
 > [`LICENSE`](../../../tom_reflection/LICENSE).
 

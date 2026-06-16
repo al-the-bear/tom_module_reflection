@@ -2,9 +2,11 @@
 
 > Part of the Tom Framework reflection toolkit. These samples exercise both
 > reflection engines; the `reflection_*` samples use the
-> [`reflectable`](https://pub.dev/packages/reflectable)-derived engine 1, the
-> `reflector_*` samples use the original analyzer-based engine 2. See each
-> sample's `LICENSE`/attribution and the repo [`README`](../README.md).
+> [`reflectable`](https://pub.dev/packages/reflectable)-derived engine 1
+> (`reflectable` was originally created by Erik Ernst and the Dart team,
+> © 2015 the Dart project authors, BSD 3-Clause), the `reflector_*` samples use
+> the original analyzer-based engine 2. See each sample's `LICENSE`/attribution
+> and the repo [`README`](../README.md).
 
 Seven runnable sample projects with long-form tutorials, ordered beginner →
 advanced. Engine 1 (runtime mirrors) first, then engine 2 (build-time model).

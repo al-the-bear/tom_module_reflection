@@ -2,9 +2,10 @@
 
 > Part of the Tom Framework. This repository carries **mixed license lineage**:
 > the `tom_reflection*` packages are **derived from the
-> [`reflectable`](https://pub.dev/packages/reflectable) package**
-> (© 2015 the Dart project authors, BSD 3-Clause), with Tom-specific
-> refactoring, fixes and enhancements © 2026 Peter Nicolai Alexis Kyaw; the
+> [`reflectable`](https://pub.dev/packages/reflectable) package** — originally
+> created by Erik Ernst and the Dart team (© 2015 the Dart project authors,
+> BSD 3-Clause) — with Tom-specific refactoring, fixes and enhancements
+> © 2026 Peter Nicolai Alexis Kyaw; the
 > `tom_reflector*` packages are **original work** (BSD 3-Clause, Tom ©). Each
 > package retains its own `LICENSE`. See [`LICENSE.md`](LICENSE.md).
 
@@ -165,6 +166,7 @@ tom_reflection/                  # this repo (GitHub: al-the-bear/tom_reflection
 ## License
 
 BSD 3-Clause, public. Lineage is load-bearing: `tom_reflection*` retain the
-upstream `reflectable` copyright (© 2015 Dart authors) alongside Tom's
+upstream `reflectable` copyright (© 2015 the Dart project authors — `reflectable`
+was originally created by Erik Ernst and the Dart team) alongside Tom's
 modifications; `tom_reflector*` are Tom's own work. See [`LICENSE.md`](LICENSE.md)
 and each package's `LICENSE`.

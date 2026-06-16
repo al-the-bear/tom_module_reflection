@@ -16,6 +16,8 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/src/dart/analysis/analysis_context_collection.dart';
 import 'package:path/path.dart' as p;
+import 'package:tom_analyzer_shared/tom_analyzer_shared.dart'
+    show resolveDartSdkPath;
 
 import 'library_resolver.dart';
 
@@ -122,59 +124,15 @@ class StandaloneLibraryResolver implements LibraryResolver {
   /// Locates the Dart SDK directory at runtime, or `null` to let the analyzer
   /// fall back to its default (executable-relative) detection.
   ///
-  /// Without an explicit SDK path the analyzer derives one from
-  /// `Platform.resolvedExecutable`. That is correct under `dart run` (it points
-  /// at the `dart` binary, so the SDK is its grandparent), but wrong for an
-  /// AOT-compiled executable (`dart compile exe`) — there `resolvedExecutable`
-  /// points at the tool itself (e.g. `$TOM_BINARY_PATH/<plat>/reflectiongenerator`)
-  /// and the SDK cannot be found. This resolves the real SDK so the compiled
-  /// `reflectiongenerator` binary works when invoked as `buildkit
-  /// :reflectiongenerator`.
-  ///
-  /// Tries, in order: the `DART_SDK` environment variable, then the `dart`
-  /// executable on `PATH` (standalone `<sdk>/bin/dart`, or the Flutter wrapper
-  /// `<flutter>/bin/dart` whose real SDK is `<flutter>/bin/cache/dart-sdk`).
-  ///
-  // TODO(reflection): centralize this in tom_analyzer_shared and have both this
-  // resolver and the summary-cache stage consume it (see the quest completion
-  // step). tom_reflector carries an equivalent private copy today.
-  static String? _resolveSdkPath() {
-    final fromEnv = Platform.environment['DART_SDK'];
-    if (_looksLikeSdk(fromEnv)) return fromEnv;
-
-    try {
-      final locator = Platform.isWindows ? 'where' : 'which';
-      final result = Process.runSync(locator, ['dart']);
-      if (result.exitCode == 0) {
-        final firstLine = (result.stdout as String)
-            .split('\n')
-            .map((l) => l.trim())
-            .firstWhere((l) => l.isNotEmpty, orElse: () => '');
-        if (firstLine.isNotEmpty) {
-          // Resolve symlinks (e.g. Homebrew/fvm shims) before walking up.
-          final resolved = File(firstLine).resolveSymbolicLinksSync();
-          final binDir = p.dirname(resolved);
-
-          // Standalone SDK: `<sdk>/bin/dart`.
-          final standaloneSdk = p.dirname(binDir);
-          if (_looksLikeSdk(standaloneSdk)) return standaloneSdk;
-
-          // Flutter wrapper: `<flutter>/bin/dart` → `<flutter>/bin/cache/dart-sdk`.
-          final flutterSdk = p.join(binDir, 'cache', 'dart-sdk');
-          if (_looksLikeSdk(flutterSdk)) return flutterSdk;
-        }
-      }
-    } on Object {
-      // Best effort — fall through to the analyzer default.
-    }
-    return null;
-  }
-
-  static bool _looksLikeSdk(String? dir) {
-    if (dir == null || dir.isEmpty) return false;
-    return File(p.join(dir, 'lib', '_internal', 'allowed_experiments.json'))
-        .existsSync();
-  }
+  /// Delegates to [resolveDartSdkPath] from `tom_analyzer_shared`, the single
+  /// source of truth for SDK location across the Tom analyzer tooling. Without
+  /// an explicit SDK path the analyzer derives one from
+  /// `Platform.resolvedExecutable`, which is correct under `dart run` but wrong
+  /// for an AOT-compiled executable (`dart compile exe`) — there it points at
+  /// the tool itself and the SDK cannot be found. Resolving the real SDK makes
+  /// the compiled `reflectiongenerator` binary work when invoked as
+  /// `buildkit :reflectiongenerator`.
+  static String? _resolveSdkPath() => resolveDartSdkPath();
 
   static String _getPackageName(String projectRoot) {
     final pubspecFile = File(p.join(projectRoot, 'pubspec.yaml'));

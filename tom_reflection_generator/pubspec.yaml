@@ -20,6 +20,10 @@ dependencies:
   # SummaryGenerator, runSummaryCacheStage) reused by both this
   # generator and tom_d4rt_generator.
   tom_analyzer_shared: ^0.1.0
+  # tom_build_base provides the v2 tool framework (ToolRunner, ToolDefinition,
+  # CommandExecutor) used to expose this generator as a single-command,
+  # buildkit-nestable CLI tool.
+  tom_build_base: any
   tom_reflection: ^1.0.1
   yaml: ^3.1.2
 

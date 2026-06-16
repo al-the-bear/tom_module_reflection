@@ -78,10 +78,12 @@ class StandaloneLibraryResolver implements LibraryResolver {
         includedPaths: [absolutePath],
         librarySummaryPaths: librarySummaryPaths,
         sdkSummaryPath: effectiveSdkSummaryPath,
+        sdkPath: _resolveSdkPath(),
       );
     } else {
       collection = AnalysisContextCollection(
         includedPaths: [absolutePath],
+        sdkPath: _resolveSdkPath(),
       );
     }
 
@@ -115,6 +117,63 @@ class StandaloneLibraryResolver implements LibraryResolver {
       return sdkSumPath;
     }
     return null;
+  }
+
+  /// Locates the Dart SDK directory at runtime, or `null` to let the analyzer
+  /// fall back to its default (executable-relative) detection.
+  ///
+  /// Without an explicit SDK path the analyzer derives one from
+  /// `Platform.resolvedExecutable`. That is correct under `dart run` (it points
+  /// at the `dart` binary, so the SDK is its grandparent), but wrong for an
+  /// AOT-compiled executable (`dart compile exe`) — there `resolvedExecutable`
+  /// points at the tool itself (e.g. `$TOM_BINARY_PATH/<plat>/reflectiongenerator`)
+  /// and the SDK cannot be found. This resolves the real SDK so the compiled
+  /// `reflectiongenerator` binary works when invoked as `buildkit
+  /// :reflectiongenerator`.
+  ///
+  /// Tries, in order: the `DART_SDK` environment variable, then the `dart`
+  /// executable on `PATH` (standalone `<sdk>/bin/dart`, or the Flutter wrapper
+  /// `<flutter>/bin/dart` whose real SDK is `<flutter>/bin/cache/dart-sdk`).
+  ///
+  // TODO(reflection): centralize this in tom_analyzer_shared and have both this
+  // resolver and the summary-cache stage consume it (see the quest completion
+  // step). tom_reflector carries an equivalent private copy today.
+  static String? _resolveSdkPath() {
+    final fromEnv = Platform.environment['DART_SDK'];
+    if (_looksLikeSdk(fromEnv)) return fromEnv;
+
+    try {
+      final locator = Platform.isWindows ? 'where' : 'which';
+      final result = Process.runSync(locator, ['dart']);
+      if (result.exitCode == 0) {
+        final firstLine = (result.stdout as String)
+            .split('\n')
+            .map((l) => l.trim())
+            .firstWhere((l) => l.isNotEmpty, orElse: () => '');
+        if (firstLine.isNotEmpty) {
+          // Resolve symlinks (e.g. Homebrew/fvm shims) before walking up.
+          final resolved = File(firstLine).resolveSymbolicLinksSync();
+          final binDir = p.dirname(resolved);
+
+          // Standalone SDK: `<sdk>/bin/dart`.
+          final standaloneSdk = p.dirname(binDir);
+          if (_looksLikeSdk(standaloneSdk)) return standaloneSdk;
+
+          // Flutter wrapper: `<flutter>/bin/dart` → `<flutter>/bin/cache/dart-sdk`.
+          final flutterSdk = p.join(binDir, 'cache', 'dart-sdk');
+          if (_looksLikeSdk(flutterSdk)) return flutterSdk;
+        }
+      }
+    } on Object {
+      // Best effort — fall through to the analyzer default.
+    }
+    return null;
+  }
+
+  static bool _looksLikeSdk(String? dir) {
+    if (dir == null || dir.isEmpty) return false;
+    return File(p.join(dir, 'lib', '_internal', 'allowed_experiments.json'))
+        .existsSync();
   }
 
   static String _getPackageName(String projectRoot) {

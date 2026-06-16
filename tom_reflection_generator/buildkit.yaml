@@ -1,5 +1,12 @@
 # Tom Build Configuration for tom_reflection_generator (reflectiongenerator)
 
+# Regenerate lib/src/version.versioner.dart on every build. The `:v` stage
+# runs before `:comp` (see buildkit_master.yaml), so the compiled binary always
+# embeds the current version, build number, git commit and build timestamp.
+# variable-prefix: reflectionGen -> generated class ReflectionGenVersionInfo.
+versioner:
+  variable-prefix: reflectionGen
+
 compiler:
   compiles:
     # macOS ARM64 - compile for self + all Linux targets

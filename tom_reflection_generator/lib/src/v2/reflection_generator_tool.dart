@@ -85,8 +85,8 @@ final reflectionGeneratorTool = ToolDefinition(
   name: 'reflectiongenerator',
   description:
       'Runtime-mirror reflection code generator — emits *.reflection.dart',
-  version: TomVersionInfo.version,
-  versionString: 'Tom Reflection Generator ${TomVersionInfo.versionLong}',
+  version: ReflectionGenVersionInfo.version,
+  versionString: 'Tom Reflection Generator ${ReflectionGenVersionInfo.versionLong}',
   mode: ToolMode.singleCommand,
   worksWithNatures: {DartProjectFolder},
   features: const NavigationFeatures(

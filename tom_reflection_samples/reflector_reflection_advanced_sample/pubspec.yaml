@@ -1,9 +1,10 @@
 name: reflector_reflection_advanced_sample
 description: >-
-  Engine 2 (build-time model) reflection advanced — entry-point reachability
-  with include/exclude filters, transitive dependency resolution and coverage
-  configuration, consuming the generated reflection for a realistic
-  dynamic-dispatch scenario.
+  Engine 2 (build-time model) reflection advanced — generate a *.r.dart
+  reflection file for a class hierarchy (abstract base, mixin, interface, static
+  members) and consume it for realistic polymorphic dispatch and serialization;
+  documents the entry-point reachability / filters / coverage configuration
+  surface.
 version: 1.0.0
 publish_to: none
 
@@ -11,6 +12,7 @@ environment:
   sdk: ^3.10.4
 
 dependencies:
+  path: ^1.9.0
   tom_reflector:
     path: ../../tom_reflector
 

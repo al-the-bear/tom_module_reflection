@@ -1,0 +1,19 @@
+name: reflector_reflection_advanced_sample
+description: >-
+  Engine 2 (build-time model) reflection advanced — entry-point reachability
+  with include/exclude filters, transitive dependency resolution and coverage
+  configuration, consuming the generated reflection for a realistic
+  dynamic-dispatch scenario.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  tom_reflector:
+    path: ../../tom_reflector
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0

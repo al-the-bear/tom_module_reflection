@@ -1,0 +1,19 @@
+name: reflection_introduction_sample
+description: >-
+  Engine 1 (runtime mirrors) introduction — annotate a small domain, generate
+  the reflection data, then reflect over a live object to invoke a method and
+  read a getter by name.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  tom_reflection: ^1.0.1
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  lints: ^5.0.0
+  test: ^1.25.0
+  tom_reflection_generator: ^1.1.1

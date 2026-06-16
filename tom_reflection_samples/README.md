@@ -19,6 +19,25 @@ advanced. Engine 1 (runtime mirrors) first, then engine 2 (build-time model).
 | `reflector_parser_advanced_sample` | 2 | Deep model dive: type-argument resolution, annotations, mixins/extensions, cycle-safe IDs, YAML. |
 | `reflector_reflection_advanced_sample` | 2 | Entry-point reachability with filters, transitive resolution, coverage config. |
 
-> **Status:** scaffolding in progress. The sample sub-projects and their
-> tutorials are built out per the quest plan
-> (`readme_and_example_plan.md`, steps 7–14); this index is filled in at step 7.
+## Sample project layout
+
+Each sample is a standalone `publish_to: none` Dart project that follows the
+same shape (mirroring the D4rt sample exemplar):
+
+```
+<sample_name>/
+  pubspec.yaml            # deps on the relevant reflection package(s)
+  analysis_options.yaml   # package:lints/recommended.yaml
+  README.md               # 10–15 page tutorial (added with the scenarios)
+  bin/run_example.dart    # aggregator entry: runs every scenario, tallies pass/fail
+  example/<scenario>/…    # one sub-dir per scenario, each with its own main.dart
+```
+
+Engine-1 samples depend on the published `tom_reflection` (`^1.0.1`) plus the
+`tom_reflection_generator` (`^1.1.1`) build step; engine-2 samples depend on the
+in-workspace `tom_reflector` by path.
+
+> **Status:** the seven sub-projects are **scaffolded** — each resolves with
+> `dart pub get` and ships a placeholder `bin/run_example.dart`. The runnable
+> scenarios and long-form tutorial READMEs are built out per the quest plan
+> (`readme_and_example_plan.md`, steps 8–14).

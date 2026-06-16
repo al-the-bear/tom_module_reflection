@@ -1,10 +1,11 @@
 # reflection_advanced_sample — examples
 
-> Part of the Tom Framework reflection toolkit. Derived from the
-> [`reflectable`](https://pub.dev/packages/reflectable) package — originally
-> created by Erik Ernst and the Dart team (© 2015 the Dart project authors,
-> BSD 3-Clause); Tom-specific refactoring,
-> fixes and enhancements © 2026 Peter Nicolai Alexis Kyaw. See
+> Part of the Tom Framework reflection toolkit. **Derived from the
+> [`reflectable`](https://pub.dev/packages/reflectable) package by the Dart team**
+> ([`google/reflectable.dart`](https://github.com/google/reflectable.dart),
+> "Copyright (c) 2015, Dart", BSD-3-Clause); Tom-specific refactoring, fixes and
+> enhancements © 2024–2026 Peter Nicolai Alexis Kyaw, released under the same
+> BSD-3-Clause terms. See
 > [`LICENSE`](../../../tom_reflection/LICENSE).
 
 This tree is the **canonical home** for this sample's runnable scenarios — the

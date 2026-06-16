@@ -1,7 +1,12 @@
 # tom_reflector_model
 
-> Part of the Tom Framework reflection toolkit — an original analyzer-based
-> build-time reflection engine (BSD 3-Clause). See [`LICENSE`](LICENSE).
+> Part of the Tom Framework reflection toolkit — an **original** analyzer-based
+> build-time reflection model © 2024–2026 Peter Nicolai Alexis Kyaw
+> (BSD-3-Clause). Like its sibling [`tom_reflector`](../tom_reflector/README.md),
+> it shares **no lineage or code** with the
+> [`reflectable`](https://pub.dev/packages/reflectable) package by the Dart team
+> ("Copyright (c) 2015, Dart", BSD-3-Clause) that engine 1 derives from. See
+> [`LICENSE`](LICENSE).
 
 The **pure, serializable object model** behind engine 2 of the Tom reflection
 toolkit. It is the typed snapshot of a program's structure — libraries,

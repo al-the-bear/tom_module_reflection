@@ -2,12 +2,15 @@
 
 > Part of the Tom Framework. This repository carries **mixed license lineage**:
 > the `tom_reflection*` packages are **derived from the
-> [`reflectable`](https://pub.dev/packages/reflectable) package** — originally
-> created by Erik Ernst and the Dart team (© 2015 the Dart project authors,
-> BSD 3-Clause) — with Tom-specific refactoring, fixes and enhancements
-> © 2026 Peter Nicolai Alexis Kyaw; the
-> `tom_reflector*` packages are **original work** (BSD 3-Clause, Tom ©). Each
-> package retains its own `LICENSE`. See [`LICENSE.md`](LICENSE.md).
+> [`reflectable`](https://pub.dev/packages/reflectable) package by the Dart team**
+> ([`google/reflectable.dart`](https://github.com/google/reflectable.dart),
+> "Copyright (c) 2015, Dart", BSD-3-Clause) — with Tom-specific refactoring, fixes
+> and enhancements © 2024–2026 Peter Nicolai Alexis Kyaw, released under the same
+> BSD-3-Clause terms — while the `tom_reflector*` packages are **original work**
+> (© 2024–2026 Peter Nicolai Alexis Kyaw, BSD-3-Clause) sharing no lineage with
+> `reflectable`. Each derived package retains the upstream copyright in its
+> `LICENSE` and records the derivation in a `NOTICE` file. See
+> [`LICENSE.md`](LICENSE.md).
 
 This document is the **map**. It orients you to the whole reflection ecosystem
 and routes you to the one package you actually want — each package then has its
@@ -165,8 +168,9 @@ tom_reflection/                  # this repo (GitHub: al-the-bear/tom_reflection
 
 ## License
 
-BSD 3-Clause, public. Lineage is load-bearing: `tom_reflection*` retain the
-upstream `reflectable` copyright (© 2015 the Dart project authors — `reflectable`
-was originally created by Erik Ernst and the Dart team) alongside Tom's
-modifications; `tom_reflector*` are Tom's own work. See [`LICENSE.md`](LICENSE.md)
-and each package's `LICENSE`.
+BSD-3-Clause, public. Lineage is load-bearing: `tom_reflection*` retain the
+upstream `reflectable` copyright ("Copyright (c) 2015, Dart" — `reflectable` is
+by the Dart team, [`google/reflectable.dart`](https://github.com/google/reflectable.dart))
+alongside Tom's modifications (© 2024–2026 Peter Nicolai Alexis Kyaw) and record
+the derivation in each derived package's `NOTICE`; `tom_reflector*` are Tom's own
+work. See [`LICENSE.md`](LICENSE.md) and each package's `LICENSE`.

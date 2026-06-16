@@ -10,6 +10,7 @@ environment:
   sdk: ^3.10.4
 
 dependencies:
+  path: ^1.9.0
   tom_reflector:
     path: ../../tom_reflector
 

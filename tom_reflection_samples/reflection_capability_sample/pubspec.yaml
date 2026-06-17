@@ -1,0 +1,19 @@
+name: reflection_capability_sample
+description: >-
+  Engine 1 (runtime mirrors) capabilities — show how each capability gates the
+  generated code, contrast a minimal capability set with useAllCapabilities,
+  and demonstrate pattern capabilities and the NoSuchCapabilityError path.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  tom_reflection: ^1.0.1
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  lints: ^5.0.0
+  test: ^1.25.0
+  tom_reflection_generator: ^1.1.1

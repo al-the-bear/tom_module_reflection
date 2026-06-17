@@ -1,0 +1,19 @@
+name: reflection_advanced_sample
+description: >-
+  Engine 1 (runtime mirrors) advanced — enumerate declarations, construct via
+  newInstance, invoke static members, walk type relations, and reflect over
+  generics and mixins in a realistic use case.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  tom_reflection: ^1.0.1
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  lints: ^5.0.0
+  test: ^1.25.0
+  tom_reflection_generator: ^1.1.1

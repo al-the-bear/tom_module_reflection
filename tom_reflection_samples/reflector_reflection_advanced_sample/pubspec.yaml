@@ -1,0 +1,21 @@
+name: reflector_reflection_advanced_sample
+description: >-
+  Engine 2 (build-time model) reflection advanced — generate a *.r.dart
+  reflection file for a class hierarchy (abstract base, mixin, interface, static
+  members) and consume it for realistic polymorphic dispatch and serialization;
+  documents the entry-point reachability / filters / coverage configuration
+  surface.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  path: ^1.9.0
+  tom_reflector:
+    path: ../../tom_reflector
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0

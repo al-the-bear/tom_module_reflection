@@ -1,0 +1,20 @@
+name: reflector_parser_advanced_sample
+description: >-
+  Engine 2 (build-time model) parser advanced — a deep dive into the model:
+  type-argument resolution, generic bounds, mixins and extensions, cycle-safe
+  id references, and a YAML round-trip, used to build a deterministic
+  API-surface index over the re-read model.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  path: ^1.9.0
+  tom_reflector:
+    path: ../../tom_reflector
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0

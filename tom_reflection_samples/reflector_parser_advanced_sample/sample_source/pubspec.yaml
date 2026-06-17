@@ -1,0 +1,9 @@
+name: shop_domain
+description: >-
+  Input source set for the reflector_parser_advanced_sample. A self-contained,
+  dependency-free Dart package analyzed as TEXT by engine 2 — never executed.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4

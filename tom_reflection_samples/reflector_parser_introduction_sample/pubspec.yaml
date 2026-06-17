@@ -1,0 +1,19 @@
+name: reflector_parser_introduction_sample
+description: >-
+  Engine 2 (build-time model) parser introduction — analyze a small source set
+  into an AnalysisResult, round-trip it through JSON, and walk the model to emit
+  a structured report.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  tom_reflector:
+    path: ../../tom_reflector
+  path: ^1.9.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0

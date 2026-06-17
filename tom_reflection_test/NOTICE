@@ -1,0 +1,21 @@
+NOTICE — tom_reflection_test
+
+This package is part of the Tom Framework reflection toolkit and is a
+derivative work of the "reflectable" package by the Dart team:
+
+    https://github.com/google/reflectable.dart
+    https://pub.dev/packages/reflectable
+
+Portions of this package are derived from reflectable, which is distributed
+under the BSD 3-Clause License with the following copyright notice, retained
+here as required by that license:
+
+    Copyright (c) 2015, Dart
+    All rights reserved.
+
+Tom-specific refactoring, fixes and enhancements are:
+
+    Copyright (c) 2024-2026, Peter Nicolai Alexis Kyaw
+
+and are released under the same BSD 3-Clause License. See the LICENSE file in
+this package for the full license text.

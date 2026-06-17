@@ -1,0 +1,264 @@
+ID,Groups,Description,Baseline [06-16 23:17]
+,,"invoke with simple argument list, one argument",OK/OK
+,,implicit setter properties,OK/OK
+,,"Mixin, superclasses not included",OK/OK
+,,Mixin-application invoke,OK/OK
+,,Mixin-application static member,OK/OK
+,,"parameter reflected types, instance methods",OK/OK
+,,"parameter reflected types, operators",OK/OK
+,,"parameter reflected types, getters and setters",OK/OK
+,,"parameter reflected types, static methods",OK/OK
+,,"parameter reflected types, static getters and setters",OK/OK
+,,"reflected return types, methods",OK/OK
+,,Instance invocation: Invoking,OK/OK
+,,Instance invocation: InstanceInvoke,OK/OK
+,,Instance invocation: InvokingFr,OK/OK
+,,Instance invocation: InstanceInvokeFr,OK/OK
+,,Static invocation: Invoking,OK/OK
+,,Static invocation: StaticInvoke,OK/OK
+,,Static invocation: InvokingFr,OK/OK
+,,Static invocation: StaticInvokeFr,OK/OK
+,,Top level invocation: TopLevelInvoke,OK/OK
+,,Top level invocation: TopLevelInvokeFr,OK/OK
+,,"invoke function, getter",OK/OK
+,,"owner, setter, TopLevelMetaInvokeCapability",OK/OK
+,,No libraryCapability,OK/OK
+,,deserialize enum,OK/OK
+,,deserialize object with enum,OK/OK
+,,"optional argument default value, imported local constant",OK/OK
+,,"optional argument default value, using identical",OK/OK
+,,"optional argument default value,",OK/OK
+,,"Shallow reflector: parameter list properties, instance methods",OK/OK
+,,"Shallow reflector: parameter list properties, operators",OK/OK
+,,"Shallow reflector: parameter list properties, getters and setters",OK/OK
+,,"Shallow reflector: parameter list properties, static methods",OK/OK
+,,Shallow reflector: method return types,OK/OK
+,,"Deep reflector: parameter list properties, instance methods",OK/OK
+,,"Deep reflector: parameter list properties, operators",OK/OK
+,,"Deep reflector: parameter list properties, getters and setters",OK/OK
+,,"Deep reflector: parameter list properties, static methods",OK/OK
+,,Deep reflector: method return types,OK/OK
+,,instance field properties,OK/OK
+,,Type annotation coverage,OK/OK
+,,static field properties,OK/OK
+,,no field capability,OK/OK
+,,Prefixed reflector type,OK/OK
+,,"multiple declarations with one type annotation, read",OK/OK
+,,"multiple declarations with one type annotation, write",OK/OK
+,,Metadata with name-clash,OK/OK
+,,"multiple declarations with one type annotation, declarations",OK/OK
+,,Annotated classes,OK/OK
+,,Creating instance of native class,OK/OK
+,,"Privacy, libraries",OK/OK
+,,"Privacy, private subclass",OK/OK
+,,"Privacy, private subtype",OK/OK
+,,"Privacy, public subclass of private subclass",OK/OK
+,,"Privacy, public subclass of private subtype",OK/OK
+,,invokingCapability,OK/OK
+,,InstanceInvokeCapability('x'),OK/OK
+,,InstanceInvokeMetaCapability(Bar),OK/OK
+,,Variable inherited from non-covered class,OK/OK
+,,"Dynamic reflected type, non-generic class",OK/OK
+,,"Dynamic reflected type, generic class",OK/OK
+,,"Dynamic reflected type, generic instantiation",OK/OK
+,,Original prefix,OK/OK
+,,"Mixin, each is annotated",OK/OK
+,,"Mixin, upwards closed",OK/OK
+,,"Mixin, superclasses included up to bound",OK/OK
+,,"Mixin, superclasses included up to but not including bound",OK/OK
+,,"Mixin, naming",OK/OK
+,,"Mixins, some covered and some uncovered",OK/OK
+,,library declarations,OK/OK
+,,GlobalQuantifyCapability,OK/OK
+,,GlobalQuantifyMetaCapability,OK/OK
+,,With typeCapability: reflectType,OK/OK
+,,With typeCapability: InstanceMirror.type,OK/OK
+,,With typingCapability: reflectType,OK/OK
+,,With typingCapability: InstanceMirror.type,OK/OK
+,,Seeing that typing is broader than type,OK/OK
+,,"Delegate method, no arguments",OK/OK
+,,"Delegate method, positional arguments",OK/OK
+,,"Delegate method, positional and named arguments",OK/OK
+,,Delegate operator,OK/OK
+,,Delegate getter and setter,OK/OK
+,,isSubtypeOf,OK/OK
+,,"isSubtypeOf, without capability",OK/OK
+,,isAssignableTo,OK/OK
+,,"isAssignableTo, without capability",OK/OK
+,,Using an import prefix with a reflector,OK/OK
+,,invoke with no arguments,OK/OK
+,,implicit getter properties,OK/OK
+,,"invoke with mandatory arguments, omitting optional ones",OK/OK
+,,"invoke with mandatory arguments, plus some optional ones",OK/OK
+,,"invoke with mandatory arguments, plus all optional ones",OK/OK
+,,"invoke with mandatory arguments, omitting named ones",OK/OK
+,,"Generic mixin, instance",OK/OK
+,,"invoke with mandatory arguments, plus named ones",OK/OK
+,,invoke operator +,OK/OK
+,,invoke operator [],OK/OK
+,,invoke operator []=,OK/OK
+,,invoke operator unary-,OK/OK
+,,invoke operator ~,OK/OK
+,,static invoke with no arguments,OK/OK
+,,"Generic mixin, super of plain class",OK/OK
+,,"static invoke with simple argument list, one argument",OK/OK
+,,Detect missing type relations capability,OK/OK
+,,"static invoke with mandatory arguments, omitting optional ones",OK/OK
+,,"Generic mixin, super of generic class",OK/OK
+,,"static invoke with mandatory arguments, plus some optional ones",OK/OK
+,,"static invoke with mandatory arguments, plus all optional ones",OK/OK
+,,"Generic mixin, named super of generic class",OK/OK
+,,"static invoke with mandatory arguments, omitting named ones",OK/OK
+,,"static invoke with mandatory arguments, plus named ones",OK/OK
+,,superclass targetting un-annotated class,OK/OK
+,,non-existing superclass,OK/OK
+,,No such method,OK/OK
+,,"No such method, natively",OK/OK
+,,Subtype quantification supports annotated class,OK/OK
+,,Subtype quantification supports subclass,OK/OK
+,,Subtype quantification supports subtype,OK/OK
+,,Subtype quantification supports mixins,OK/OK
+,,Subtype quantification supports mixin applications,OK/OK
+,,Subtype quantification does not support unrelated class,OK/OK
+,,Issue as reported,OK/OK
+,,No arguments given,OK/OK
+,,Giving one optional argument,OK/OK
+,,Giving two optional arguments,OK/OK
+,,Giving one required argument,OK/OK
+,,Giving one required and one optional argument,OK/OK
+,,Giving one required and two optional arguments,OK/OK
+reflector,,"newInstance unnamed constructor, no arguments",OK/OK
+reflector,,"newInstance named constructor, simple argument list, one argument",OK/OK
+,,get type arguments,OK/OK
+reflector,,"newInstance optional arguments, all used",OK/OK
+reflector,,"newInstance optional arguments, none used",OK/OK
+reflector,,"newInstance optional arguments, some used",OK/OK
+,,get type arguments in unimplemented case,OK/OK
+reflector,,"newInstance named arguments, all used",OK/OK
+reflector,,"newInstance named arguments, some used",OK/OK
+reflector,,"newInstance named arguments, unused",OK/OK
+reflector,,newInstance on factory,OK/OK
+metaReflector,,"newInstance unnamed constructor, no arguments",OK/OK
+metaReflector,,"newInstance named constructor, simple argument list, one argument",OK/OK
+metaReflector,,"newInstance optional arguments, all used",OK/OK
+metaReflector,,"newInstance optional arguments, none used",OK/OK
+,,Parameter mirrors,OK/OK
+metaReflector,,"newInstance optional arguments, some used",OK/OK
+metaReflector,,"newInstance named arguments, all used",OK/OK
+metaReflector,,"newInstance named arguments, some used",OK/OK
+metaReflector,,"newInstance named arguments, unused",OK/OK
+metaReflector,,newInstance on factory,OK/OK
+,,"newInstance named constructor, no metadata, none required",OK/OK
+,,"newInstance named constructor, no metadata, rejected",OK/OK
+,,Round trip test,OK/OK
+,,Serialize subtype,OK/OK
+,,declarations,OK/OK
+,,MethodMirror properties,OK/OK
+,,instanceMethods,OK/OK
+,,"MetaReflector, set of reflectors",OK/OK
+,,Static const not present in mixin application,OK/OK
+,,"Mixin, Instance of 'Reflector'",OK/OK
+,,"Mixin, Instance of 'ReflectorUpwardsClosed'",OK/OK
+,,"MetaReflector, select by name",OK/OK
+,,"MetaReflector, select by capability",OK/OK
+,,The function from metadata has the expected type and is callable,OK/OK
+,,Polymer basic needs,OK/OK
+,,invoker of operator +,OK/OK
+,,invoker of operator [],OK/OK
+,,invoker of operator []=,OK/OK
+,,Never isNonNullable,OK/OK
+,,Function isNonNullable,OK/OK
+,,int isNonNullable,OK/OK
+,,List<int> isNonNullable,OK/OK
+,,FutureOr<Never> isNonNullable,OK/OK
+,,FutureOr<Function> isNonNullable,OK/OK
+,,FutureOr<void Function()> isNonNullable,OK/OK
+,,Using different kinds of function types,OK/OK
+,,FutureOr<List<int>> isNonNullable,OK/OK
+,,FutureOr<X> isNonNullable,OK/OK
+,,Reflecting types involving `void`,OK/OK
+,,FutureOr<FutureOr<Never>> isNonNullable,OK/OK
+,,Name-clash in annotated classes,OK/OK
+,,void isNullable,OK/OK
+,,dynamic isNullable,OK/OK
+,,Null isNullable,OK/OK
+,,Never? isNullable,OK/OK
+,,Function? isNullable,OK/OK
+,,int? isNullable,OK/OK
+,,Using proxy,OK/OK
+,,List<int>? isNullable,OK/OK
+,,FutureOr<Never>? isNullable,OK/OK
+,,FutureOr<Function>? isNullable,OK/OK
+,,FutureOr<void Function()>? isNullable,OK/OK
+,,FutureOr<int>? isNullable,OK/OK
+,,FutureOr<List<int>>? isNullable,OK/OK
+,,FutureOr<X>? isNullable,OK/OK
+,,FutureOr<void> isNullable,OK/OK
+,,FutureOr<dynamic> isNullable,OK/OK
+,,FutureOr<Null> isNullable,OK/OK
+,,FutureOr<Never?> isNullable,OK/OK
+,,FutureOr<Function?> isNullable,OK/OK
+,,FutureOr<void Function()?> isNullable,OK/OK
+,,FutureOr<int?> isNullable,OK/OK
+,,FutureOr<List<int>?> isNullable,OK/OK
+,,FutureOr<X?> isNullable,OK/OK
+,,FutureOr<FutureOr<void>> isNullable,OK/OK
+,,FutureOr<Y> both false,OK/OK
+,,FutureOr<FutureOr<Y>> both false,OK/OK
+,,superinterfaces,OK/OK
+,,reflect,OK/OK
+,,invoker with no arguments,OK/OK
+,,"invoker with simple argument list, one argument",OK/OK
+,,"invoker with mandatory arguments, omitting optional ones",OK/OK
+,,"invoker with mandatory arguments, plus some optional ones",OK/OK
+,,"invoker with mandatory arguments, plus all optional ones",OK/OK
+,,"invoker with mandatory arguments, omitting named ones",OK/OK
+,,"invoker with mandatory arguments, plus named ones",OK/OK
+,,get field,OK/OK
+,,set field,OK/OK
+,,field variables,OK/OK
+,,invoke instance method,OK/OK
+,,getters,OK/OK
+,,setters,OK/OK
+,,aMethod,OK/OK
+,,bMethod,OK/OK
+,,Type arguments on literal maps and lists,OK/OK
+,,cMethod,OK/OK
+,,getters and setters,OK/OK
+,,Static invocation,OK/OK
+,,Dynamic invocation Annotated,OK/OK
+,,Declarations,OK/OK
+,,Can't reflect subclass of annotated,OK/OK
+,,Can't reflect subtype of annotated,OK/OK
+,,Can't reflect unnanotated,OK/OK
+,,reflect local,OK/OK
+,,reflect imported,OK/OK
+,,"Type variables, no type variable capability",OK/OK
+,,"Type variables, no bounds capability, generic class",OK/OK
+,,"Proper subtypes as metadata, declarations",OK/OK
+,,"Type variables, no bounds capability, instantiated generic class",OK/OK
+,,"Type variables, static",OK/OK
+,,"Type variables, dynamic",OK/OK
+,,"Proper subtypes as metadata, invocation",OK/OK
+,,Static members,OK/OK
+,,metadata on class,OK/OK
+,,metadata without capability,OK/OK
+,,Unused reflector,OK/OK
+,,"positional argument default, local constant",OK/OK
+,,"positional argument default, global constant",OK/OK
+,,"named argument default, local constant",OK/OK
+,,"named argument default, global constant",OK/OK
+,,"initializing formal default, local constant",OK/OK
+,,"initializing formal default, global constant",OK/OK
+,,"named initializing formal default, local constant",OK/OK
+,,"named initializing formal default, global constant",OK/OK
+,,isAbstract,OK/OK
+,,Reject reflection directly on instantiated generic class,OK/OK
+,,isPrivate,OK/OK
+,,hasReflectedType,OK/OK
+,,"Obtain mirror for expanding generic using `reflect`, then `type`.",OK/OK
+,,isTopLevel,OK/OK
+,,isEnum,OK/OK
+,,isOriginalDeclaration,OK/OK
+,,Using a function type as an annotation,OK/OK
+,,FutureOr<int> isNonNullable,OK/OK

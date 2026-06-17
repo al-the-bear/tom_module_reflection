@@ -191,7 +191,11 @@ class StandaloneLibraryResolver implements LibraryResolver {
   Future<LibraryElement> libraryFor(FileId fileId) async {
     // Convert FileId to absolute path
     if (fileId.package == _packageName) {
-      final absolutePath = p.join(_projectRoot, fileId.path);
+      // `fileId.path` uses forward slashes (`lib/src/...`); joining it onto a
+      // backslash-rooted project path on Windows yields a mixed-separator,
+      // non-normalized path that the analyzer rejects ("Only absolute
+      // normalized paths are supported"). Normalize to the platform separator.
+      final absolutePath = p.normalize(p.join(_projectRoot, fileId.path));
       final context = _collection.contextFor(absolutePath);
       final result =
           await context.currentSession.getResolvedLibrary(absolutePath);
@@ -230,7 +234,9 @@ class StandaloneLibraryResolver implements LibraryResolver {
 
     ResolvedLibraryResult? result;
     if (fileId.package == _packageName) {
-      final absolutePath = p.join(_projectRoot, fileId.path);
+      // Normalize: see the note in `libraryFor` — forward-slash FileId paths
+      // joined onto a backslash project root are rejected by the analyzer.
+      final absolutePath = p.normalize(p.join(_projectRoot, fileId.path));
       final context = _collection.contextFor(absolutePath);
       final libResult =
           await context.currentSession.getResolvedLibrary(absolutePath);
@@ -312,8 +318,12 @@ class StandaloneLibraryResolver implements LibraryResolver {
 
   /// Resolves a specific file and returns its library element.
   Future<LibraryElement?> resolveFile(String filePath) async {
-    final absolutePath =
-        p.isAbsolute(filePath) ? filePath : p.join(_projectRoot, filePath);
+    // Normalize so a mixed-separator path (e.g. a forward-slash relative path
+    // joined onto a backslash project root on Windows) is accepted by the
+    // analyzer, which requires absolute, normalized paths.
+    final absolutePath = p.normalize(
+      p.isAbsolute(filePath) ? filePath : p.join(_projectRoot, filePath),
+    );
 
     try {
       final context = _collection.contextFor(absolutePath);

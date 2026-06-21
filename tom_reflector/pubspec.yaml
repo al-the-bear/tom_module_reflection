@@ -21,7 +21,7 @@ dependencies:
   # Shared analyzer-tooling utilities. tom_reflector consumes only the runtime
   # Dart-SDK locator (resolveDartSdkPath) so AOT-compiled binaries find the SDK;
   # it does NOT use the summary-cache feature (see analyzer_context_builder).
-  tom_analyzer_shared: ^0.2.0
+  tom_analyzer_shared: ^0.3.0
   tom_build_base: any
   tom_d4rt_ast:
     path: ../../d4rt/tom_d4rt_ast

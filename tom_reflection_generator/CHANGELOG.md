@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.2
+
+- Upgraded `tom_analyzer_shared` to `^0.3.0`. Analyzer summaries are now stored
+  in the shared Tom tool-cache directory (resolved via `ToolCacheLocator`:
+  `TOM_TOOL_CACHE` → ancestor `.tom/tom_tool_cache` → Dart tool dir) instead of
+  a fixed `<workspace>/.tom/analyzer-cache`, so the same hosted-package summary
+  is reused across projects and sibling generators. No API change.
+
 ## 1.1.1
 
 - **Bug fix**: Fixed incorrect prefix assignment for mixin-variant types

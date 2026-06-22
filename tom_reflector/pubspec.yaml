@@ -9,7 +9,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  analyzer: ^8.0.0
+  analyzer: ^10.0.0
   args: ^2.4.0
   collection: ^1.18.0
   crypto: ^3.0.3

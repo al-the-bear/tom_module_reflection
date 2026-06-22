@@ -33,6 +33,12 @@ analyzer:
     - test/build_examples/**/*.r.dart
     # Test examples are separate projects with their own dependencies
     - test/build_examples/**
+    # Ad-hoc analyzer-API exploration/extraction scripts. Not part of the
+    # shipped package, not referenced by lib/ or test/, and they deliberately
+    # poke at deprecated analyzer members (e.g. isSynthetic, AST .name/.members)
+    # to document the API. Excluded so the analyzer-10 deprecation infos in
+    # these throwaway tools don't gate the shipped library.
+    - tool/**
 
 # For more information about the core and recommended set of lints, see
 # https://dart.dev/go/core-lints

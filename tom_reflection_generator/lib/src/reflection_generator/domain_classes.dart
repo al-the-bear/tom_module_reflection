@@ -170,13 +170,13 @@ class _ClassDomain {
         // If [member] is a synthetic accessor created from a field, search for
         // the metadata on the original field.
         List<ElementAnnotation> metadata =
-            (member is PropertyAccessorElement && member.isSynthetic)
+            (member is PropertyAccessorElement && _elementIsSynthetic(member))
             ? (member.variable.metadata.annotations)
             : member.metadata.annotations;
         List<ElementAnnotation>? getterMetadata;
         if (_reflectorDomain._capabilities._impliesCorrespondingSetters &&
             member is PropertyAccessorElement &&
-            !member.isSynthetic &&
+            !_elementIsSynthetic(member) &&
             member is SetterElement) {
           PropertyAccessorElement? correspondingGetter =
               member.correspondingGetter;
@@ -267,13 +267,13 @@ class _ClassDomain {
       if (!accessor.isStatic || accessor.isPrivate) return;
       // If [member] is a synthetic accessor created from a field, search for
       // the metadata on the original field.
-      List<ElementAnnotation> metadata = accessor.isSynthetic
+      List<ElementAnnotation> metadata = _elementIsSynthetic(accessor)
           ? (accessor.variable.metadata.annotations)
           : accessor.metadata.annotations;
       List<ElementAnnotation>? getterMetadata;
       if (_reflectorDomain._capabilities._impliesCorrespondingSetters &&
           accessor is SetterElement &&
-          !accessor.isSynthetic) {
+          !_elementIsSynthetic(accessor)) {
         PropertyAccessorElement? correspondingGetter =
             accessor.correspondingGetter;
         getterMetadata = correspondingGetter?.metadata.annotations;

@@ -21,7 +21,7 @@ part of 'generator_implementation.dart';
 ///
 /// Synthetic accessors are those automatically generated for fields.
 bool _accessorIsntImplicitGetterOrSetter(PropertyAccessorElement accessor) {
-  return !accessor.isSynthetic ||
+  return !_elementIsSynthetic(accessor) ||
       (accessor is! GetterElement && accessor is! SetterElement);
 }
 
@@ -55,7 +55,7 @@ bool _executableIsntImplicitGetterOrSetter(ExecutableElement executable) {
 int _classDescriptor(InterfaceElement element) {
   int result = constants.clazz;
   if (element.isPrivate) result |= constants.privateAttribute;
-  if (element.isSynthetic) result |= constants.syntheticAttribute;
+  if (_elementIsSynthetic(element)) result |= constants.syntheticAttribute;
   if (element is MixinElement ||
       element is ClassElement && element.isAbstract) {
     result |= constants.abstractAttribute;
@@ -87,7 +87,7 @@ int _classDescriptor(InterfaceElement element) {
 int _topLevelVariableDescriptor(TopLevelVariableElement element) {
   int result = constants.field;
   if (element.isPrivate) result |= constants.privateAttribute;
-  if (element.isSynthetic) result |= constants.syntheticAttribute;
+  if (_elementIsSynthetic(element)) result |= constants.syntheticAttribute;
   if (element.isConst) {
     result |= constants.constAttribute;
     // We will get `false` from `element.isFinal` in this case, but with
@@ -133,7 +133,7 @@ int _topLevelVariableDescriptor(TopLevelVariableElement element) {
 int _fieldDescriptor(FieldElement element) {
   int result = constants.field;
   if (element.isPrivate) result |= constants.privateAttribute;
-  if (element.isSynthetic) result |= constants.syntheticAttribute;
+  if (_elementIsSynthetic(element)) result |= constants.syntheticAttribute;
   if (element.isConst) {
     result |= constants.constAttribute;
     // We will get `false` from `element.isFinal` in this case, but with
@@ -183,7 +183,7 @@ int _fieldDescriptor(FieldElement element) {
 int _parameterDescriptor(FormalParameterElement element) {
   int result = constants.parameter;
   if (element.isPrivate) result |= constants.privateAttribute;
-  if (element.isSynthetic) result |= constants.syntheticAttribute;
+  if (_elementIsSynthetic(element)) result |= constants.syntheticAttribute;
   if (element.isConst) result |= constants.constAttribute;
   if (element.isFinal) result |= constants.finalAttribute;
   if (element.defaultValueCode != null) {
@@ -277,7 +277,7 @@ int _declarationDescriptor(ExecutableElement element) {
   }
   if (element.isPrivate) result |= constants.privateAttribute;
   if (element.isStatic) result |= constants.staticAttribute;
-  if (element.isSynthetic) result |= constants.syntheticAttribute;
+  if (_elementIsSynthetic(element)) result |= constants.syntheticAttribute;
   if (element.isAbstract) result |= constants.abstractAttribute;
   if (element.enclosingElement is! InterfaceElement) {
     result |= constants.topLevelAttribute;

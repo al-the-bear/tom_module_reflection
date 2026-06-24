@@ -1,0 +1,15 @@
+ID,Groups,Description,Baseline [06-21 20:56]
+,FileId,changeExtension rewrites dart suffix,OK/OK
+,FileId,uri resolves to package path,OK/OK
+,FileId,equality uses package and path,OK/OK
+,isGlobPattern,detects glob metacharacters,OK/OK
+,isGlobPattern,treats a plain path as a non-glob,OK/OK
+,collectTargetFiles,includes plain .dart files and excludes generated outputs,OK/OK
+,collectTargetFiles,skips a directory target unless allMode is set,OK/OK
+,findProjectRoot,walks up to the nearest pubspec.yaml,OK/OK
+,findProjectRoot,returns null when no pubspec.yaml is found,OK/OK
+,,warning map exposes all toggles,OK/OK
+,extractGenerateForPatterns (build.yaml fallback),reads patterns from a reflection builder target,OK/OK
+,extractGenerateForPatterns (build.yaml fallback),reads the top-level generate_for shorthand,OK/OK
+,extractGenerateForPatterns (build.yaml fallback),returns empty for an unrelated build.yaml,OK/OK
+,extractBuilderOptions (build.yaml extension override),collects builder options including extension,OK/OK

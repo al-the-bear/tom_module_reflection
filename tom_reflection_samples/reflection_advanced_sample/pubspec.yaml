@@ -10,10 +10,10 @@ environment:
   sdk: ^3.10.4
 
 dependencies:
-  tom_reflection: ^1.0.1
+  tom_reflection: ">=1.0.1"
 
 dev_dependencies:
   build_runner: ^2.4.0
   lints: ^5.0.0
   test: ^1.25.0
-  tom_reflection_generator: ^1.1.1
+  tom_reflection_generator: ">=1.2.1"

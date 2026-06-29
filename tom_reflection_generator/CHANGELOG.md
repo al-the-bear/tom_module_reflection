@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1
+
+- Track our latest published components: `tom_analyzer_shared` floor raised to
+  `>=0.6.0` (ToolCacheLocator shared tool-cache root). All in-workspace
+  dependencies now use lower-bound-only constraints (no upper cap) so
+  `pub upgrade` resolves to our latest versions during active development.
+
 ## 1.2.0
 
 - **Analyzer 10 migration**: widened the `analyzer` constraint from `^8.0.0`

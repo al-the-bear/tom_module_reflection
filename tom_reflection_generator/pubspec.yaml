@@ -1,6 +1,6 @@
 name: tom_reflection_generator
 description: Standalone reflection generator (builder + CLI) for the Tom framework.
-version: 1.2.0
+version: 1.2.1
 repository: https://github.com/al-the-bear/tom_reflection
 
 environment:
@@ -15,16 +15,18 @@ dependencies:
   logging: ^1.3.0
   path: ^1.9.0
   pub_semver: ^2.2.0
+  # In-workspace components: lower-bound only (no upper cap) so `pub upgrade`
+  # tracks our latest published versions during active development.
   # tom_analyzer_shared provides the shared analyzer summary-cache
-  # infrastructure (SummaryCacheManager, DependencyResolver,
-  # SummaryGenerator, runSummaryCacheStage) reused by both this
-  # generator and tom_d4rt_generator.
-  tom_analyzer_shared: ^0.4.0
+  # infrastructure (SummaryCacheManager, DependencyResolver, SummaryGenerator,
+  # runSummaryCacheStage) reused by both this generator and tom_d4rt_generator.
+  # Floor 0.6.0 for the ToolCacheLocator shared tool-cache root.
+  tom_analyzer_shared: ">=0.6.0"
   # tom_build_base provides the v2 tool framework (ToolRunner, ToolDefinition,
   # CommandExecutor) used to expose this generator as a single-command,
   # buildkit-nestable CLI tool.
-  tom_build_base: any
-  tom_reflection: ^1.0.1
+  tom_build_base: ">=2.6.25"
+  tom_reflection: ">=1.0.1"
   yaml: ^3.1.2
 
 dev_dependencies:

@@ -146,7 +146,7 @@ Future<String> _extractMetadataCode(
   if ((element is PropertyAccessorElement ||
           element is ConstructorElement ||
           element is MixinApplication) &&
-      element.isSynthetic) {
+      _elementIsSynthetic(element)) {
     return 'const []';
   }
 

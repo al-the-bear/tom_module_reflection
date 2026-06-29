@@ -317,7 +317,7 @@ class _ReflectorDomain {
       // Ensure that we include variables corresponding to the implicit
       // accessors that we have included into `members`.
       for (ExecutableElement element in members.items) {
-        if (element is PropertyAccessorElement && element.isSynthetic) {
+        if (element is PropertyAccessorElement && _elementIsSynthetic(element)) {
           PropertyInducingElement? variable = element.variable;
           if (variable is FieldElement) {
             fields.add(variable);
@@ -1302,7 +1302,7 @@ class _ReflectorDomain {
     Map<FunctionType, int> typedefs,
     bool reflectedTypeRequested,
   ) async {
-    if (element is PropertyAccessorElement && element.isSynthetic) {
+    if (element is PropertyAccessorElement && _elementIsSynthetic(element)) {
       // There is no type propagation, so we declare an `accessorElement`.
       PropertyAccessorElement accessorElement = element;
       PropertyInducingElement? variable = accessorElement.variable;
@@ -2160,7 +2160,7 @@ class _ReflectorDomain {
         // it's from a summary-backed library. For synthetic elements, metadata
         // is empty. For summary-backed elements, _extractMetadataCode has a
         // fallback path that reads annotations from the element directly.
-        if (node == null && element.isSynthetic) {
+        if (node == null && _elementIsSynthetic(element)) {
           metadataCode = 'const []';
         } else {
           metadataCode = await _extractMetadataCode(

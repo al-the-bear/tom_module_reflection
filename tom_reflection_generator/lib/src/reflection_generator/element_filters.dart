@@ -29,6 +29,32 @@ typedef CapabilityChecker =
     );
 
 // ============================================================================
+// Synthetic-element check (analyzer-10 deprecation shim)
+// ============================================================================
+
+/// Whether [element] is synthetic (analyzer-generated, with no corresponding
+/// source declaration).
+///
+/// analyzer 10 deprecated `Element.isSynthetic` in favour of the `isOriginX`
+/// flag family, but it is **not** a drop-in replacement here:
+/// - `isOriginDeclaration` is not declared on the base `Element` type (only on
+///   specific subtypes such as `ConstructorElement`), so several of this
+///   generator's call sites — which hold a statically-typed `Element` — could
+///   not call it without casts; and
+/// - this generator's local [MixinApplication] shim overrides `isSynthetic`
+///   (routing every other member through `noSuchMethod`), and real call sites
+///   (e.g. metadata extraction, class descriptors) pass a `MixinApplication`
+///   here. Dispatching through `isSynthetic` honours that override; calling
+///   `isOriginDeclaration` would hit `noSuchMethod` and return `null`.
+///
+/// `Element.isSynthetic` still works in analyzer 10 — it is implemented as
+/// `!isOriginDeclaration` and is merely deprecated, not removed. Funnelling
+/// every check through this one helper keeps a single, documented deprecation
+/// suppression and preserves the exact (virtual-dispatch) behaviour.
+// ignore: deprecated_member_use
+bool _elementIsSynthetic(Element element) => element.isSynthetic;
+
+// ============================================================================
 // Top-Level Element Extraction
 // ============================================================================
 
@@ -46,7 +72,7 @@ Iterable<TopLevelVariableElement> _extractDeclaredVariables(
   _Capabilities capabilities,
 ) sync* {
   for (TopLevelVariableElement variable in libraryElement.topLevelVariables) {
-    if (variable.isPrivate || variable.isSynthetic) continue;
+    if (variable.isPrivate || _elementIsSynthetic(variable)) continue;
     if (capabilities.supportsTopLevelInvoke(
       variable.library.typeSystem,
       variable.nameOrUnknown,
@@ -123,7 +149,7 @@ Iterable<PropertyAccessorElement> _extractLibraryAccessors(
     // Get metadata from the appropriate source
     List<ElementAnnotation> metadata;
     List<ElementAnnotation>? getterMetadata;
-    if (accessor.isSynthetic) {
+    if (_elementIsSynthetic(accessor)) {
       metadata = accessor.variable.metadata.annotations;
       getterMetadata = metadata;
     } else {
@@ -131,7 +157,7 @@ Iterable<PropertyAccessorElement> _extractLibraryAccessors(
       // For explicit setters, check if corresponding getter has metadata
       if (capabilities._impliesCorrespondingSetters &&
           accessor is SetterElement &&
-          !accessor.isSynthetic) {
+          !_elementIsSynthetic(accessor)) {
         PropertyAccessorElement? correspondingGetter =
             accessor.correspondingGetter;
         getterMetadata = correspondingGetter?.metadata.annotations;
@@ -178,7 +204,7 @@ Iterable<FieldElement> _extractDeclaredFields(
         ? capabilities.supportsStaticInvoke
         : capabilities.supportsInstanceInvoke;
     
-    return !field.isSynthetic &&
+    return !_elementIsSynthetic(field) &&
         capabilityChecker(
           interfaceElement.library.typeSystem,
           field.nameOrUnknown,
@@ -268,15 +294,15 @@ Iterable<PropertyAccessorElement> _extractAccessors(
         : capabilities.supportsInstanceInvoke;
     
     // Get metadata from appropriate source
-    List<ElementAnnotation> metadata = accessor.isSynthetic
+    List<ElementAnnotation> metadata = _elementIsSynthetic(accessor)
         ? (accessor.variable.metadata.annotations)
         : accessor.metadata.annotations;
-    
+
     // For explicit setters, check if corresponding getter has metadata
     List<ElementAnnotation>? getterMetadata;
     if (capabilities._impliesCorrespondingSetters &&
         accessor is SetterElement &&
-        !accessor.isSynthetic) {
+        !_elementIsSynthetic(accessor)) {
       PropertyAccessorElement? correspondingGetter =
           accessor.correspondingGetter;
       getterMetadata = correspondingGetter?.metadata.annotations;

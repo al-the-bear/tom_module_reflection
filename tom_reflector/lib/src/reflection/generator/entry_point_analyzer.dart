@@ -746,14 +746,14 @@ class EntryPointAnalyzer {
       if (annotationElement is ConstructorElement) {
         typeElement = annotationElement.enclosingElement;
       } else if (annotationElement is PropertyAccessorElement) {
-        // Const variable annotation like @tomReflection
-        // In analyzer 8.x, use variable3 (nullable) instead of variable2
-        final variable = annotationElement.variable3;
-        if (variable != null) {
-          final varType = variable.type;
-          if (varType is InterfaceType) {
-            typeElement = varType.element;
-          }
+        // Const variable annotation like @tomReflection.
+        // analyzer 10: PropertyAccessorElement.variable is the (non-nullable)
+        // associated field/top-level variable (replaces the old nullable
+        // .variable3 accessor).
+        final variable = annotationElement.variable;
+        final varType = variable.type;
+        if (varType is InterfaceType) {
+          typeElement = varType.element;
         }
       }
 

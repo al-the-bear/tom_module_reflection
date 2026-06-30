@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.3.0
+
+- **Deterministic output.** Import prefixes (`prefix0`, `prefix1`, …) are now
+  numbered by a stable sort of the import URIs instead of the order libraries
+  happened to be encountered while walking the element model. The same set of
+  imported libraries therefore always yields byte-identical generated code,
+  regardless of analyzer/SDK traversal order — eliminating spurious
+  cross-machine diffs in `.reflection.dart` outputs. See
+  `src/reflection_generator/prefix_renumber.dart`.
+- **Build-runner-style progress.** `generateReflection` now prints a start
+  banner (`Generating reflection for N target file(s)...`), a per-file
+  `[i/N]` progress line for multi-file runs, and a timed completion summary
+  (`Reflection generation succeeded after Xs — N generated, M skipped.`) in
+  non-verbose mode, so a run is observable when nested under buildkit (where
+  this tool's stdout is the only signal the user sees).
+- Raised the `tom_analyzer_shared` floor to `>=0.6.1` for the verbose
+  per-summary cache-usage trace (`using {pkg}@{ver}.sum from cache at {path}`),
+  which lets a generation run be audited for actual cache reads.
+
 ## 1.2.1
 
 - Track our latest published components: `tom_analyzer_shared` floor raised to

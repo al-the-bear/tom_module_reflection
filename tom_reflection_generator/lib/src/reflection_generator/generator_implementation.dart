@@ -38,6 +38,7 @@ import 'reflection_class_constants.dart' as reflection_class_constants;
 import 'element_capability.dart' as ec;
 import 'fixed_point.dart';
 import 'library_resolver.dart';
+import 'prefix_renumber.dart';
 import 'reflection_errors.dart' as errors;
 
 part 'capabilities.dart';
@@ -1260,17 +1261,34 @@ class GeneratorImplementation {
     // imports because generating the code can add further imports.
     String code = await world.generateCode(suppressedWarnings);
 
-    var imports = <String>[];
+    // Resolve every collected library's import URI and its current
+    // (encounter-order) prefix index. Encounter order is not stable across
+    // environments, so we renumber the prefixes by URI below to keep the
+    // emitted output byte-identical regardless of discovery order.
+    final uriByOldIndex = <int, String>{};
+    final uriByLibrary = <LibraryElement, String>{};
     for (LibraryElement library in world.importCollector._libraries) {
-      Uri uri = library == world.entryPointLibrary
+      final prefix = world.importCollector._getPrefix(library);
+      if (prefix.isEmpty) continue;
+      final uri = library == world.entryPointLibrary
           ? Uri.parse(originalEntryPointFilename)
           : await _getImportUri(library, _resolver, generatedLibraryId);
-      String prefix = world.importCollector._getPrefix(library);
-      if (prefix.isNotEmpty) {
-        imports.add(
-          "import '$uri' as ${prefix.substring(0, prefix.length - 1)};",
-        );
-      }
+      // Strip the trailing period: "prefix3." -> index 3.
+      final oldIndex = int.parse(prefix.substring('prefix'.length, prefix.length - 1));
+      uriByOldIndex[oldIndex] = uri.toString();
+      uriByLibrary[library] = uri.toString();
+    }
+
+    // Deterministic prefix numbering (sorted by URI) and apply it to the body.
+    final remap = deterministicPrefixRemap(uriByOldIndex);
+    code = applyPrefixRemap(code, remap);
+
+    var imports = <String>[];
+    for (final entry in uriByLibrary.entries) {
+      final prefix = world.importCollector._getPrefix(entry.key);
+      final oldIndex = int.parse(prefix.substring('prefix'.length, prefix.length - 1));
+      final newIndex = remap[oldIndex] ?? oldIndex;
+      imports.add("import '${entry.value}' as prefix$newIndex;");
     }
     imports.sort();
 

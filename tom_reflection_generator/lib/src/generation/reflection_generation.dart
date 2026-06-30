@@ -152,7 +152,19 @@ Future<ReflectionGenerationResult> generateReflection({
     var processedCount = 0;
     var skippedCount = 0;
 
+    // Build-runner-style progress so a run is observable even in non-verbose
+    // mode (e.g. when nested under buildkit, where this tool's stdout is the
+    // only signal the user sees).
+    final total = filesToProcess.length;
+    final stopwatch = Stopwatch()..start();
+    print('Generating reflection for $total target file(s)...');
+
+    var index = 0;
     for (final filePath in filesToProcess) {
+      index++;
+      if (total > 1) {
+        print('  [$index/$total] ${p.relative(filePath, from: root)}');
+      }
       final processed = await processReflectionFile(
         filePath,
         root,
@@ -168,6 +180,11 @@ Future<ReflectionGenerationResult> generateReflection({
         skippedCount++;
       }
     }
+
+    stopwatch.stop();
+    print('Reflection generation succeeded after '
+        '${_formatElapsed(stopwatch.elapsed)} — '
+        '$processedCount generated, $skippedCount skipped.');
 
     return ReflectionGenerationResult(
       processedCount: processedCount,
@@ -227,6 +244,18 @@ Set<String> collectTargetFiles({
   }
 
   return filesToProcess;
+}
+
+/// Formats [elapsed] as a compact, build-runner-style duration string
+/// (e.g. `0.3s`, `12.7s`, `1m 4s`).
+String _formatElapsed(Duration elapsed) {
+  final totalMs = elapsed.inMilliseconds;
+  if (totalMs < 60000) {
+    return '${(totalMs / 1000).toStringAsFixed(1)}s';
+  }
+  final minutes = elapsed.inMinutes;
+  final seconds = elapsed.inSeconds - minutes * 60;
+  return '${minutes}m ${seconds}s';
 }
 
 /// Whether [path] is a `.dart` file that is itself an eligible input (i.e. not

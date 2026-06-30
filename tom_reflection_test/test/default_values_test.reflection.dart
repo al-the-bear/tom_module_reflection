@@ -42,7 +42,7 @@ final _data = <r.Reflection, r.ReflectorData>{
                   null,
                   prefix0.myReflection,
                   const prefix0.B(named: 24),
-                  const <int, Type>{1: prefix0.A},
+                  const <int, Type>{1: A},
                 ],
               ]) => b ? prefix0.A.optional(x, y, z, w) : null,
         },

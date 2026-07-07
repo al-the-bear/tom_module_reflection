@@ -1,15 +1,17 @@
-ID,Groups,Description,Baseline [06-23 02:32]
-,FileId,changeExtension rewrites dart suffix,OK/OK
-,FileId,uri resolves to package path,OK/OK
-,FileId,equality uses package and path,OK/OK
-,isGlobPattern,detects glob metacharacters,OK/OK
-,isGlobPattern,treats a plain path as a non-glob,OK/OK
-,collectTargetFiles,includes plain .dart files and excludes generated outputs,OK/OK
-,collectTargetFiles,skips a directory target unless allMode is set,OK/OK
-,findProjectRoot,walks up to the nearest pubspec.yaml,OK/OK
-,,warning map exposes all toggles,OK/OK
-,findProjectRoot,returns null when no pubspec.yaml is found,OK/OK
-,extractGenerateForPatterns (build.yaml fallback),reads patterns from a reflection builder target,OK/OK
-,extractGenerateForPatterns (build.yaml fallback),reads the top-level generate_for shorthand,OK/OK
-,extractGenerateForPatterns (build.yaml fallback),returns empty for an unrelated build.yaml,OK/OK
-,extractBuilderOptions (build.yaml extension override),collects builder options including extension,OK/OK
+ID,Groups,Description,Baseline [06-23 02:32],[07-05 13:36]
+,FileId,changeExtension rewrites dart suffix,OK/OK,OK/OK
+,FileId,uri resolves to package path,OK/OK,OK/OK
+,FileId,equality uses package and path,OK/OK,OK/OK
+,isGlobPattern,detects glob metacharacters,OK/OK,OK/OK
+,isGlobPattern,treats a plain path as a non-glob,OK/OK,OK/OK
+,collectTargetFiles,includes plain .dart files and excludes generated outputs,OK/OK,OK/OK
+,collectTargetFiles,skips a directory target unless allMode is set,OK/OK,OK/OK
+,findProjectRoot,walks up to the nearest pubspec.yaml,OK/OK,OK/OK
+,,warning map exposes all toggles,OK/OK,OK/OK
+,findProjectRoot,returns null when no pubspec.yaml is found,OK/OK,OK/OK
+,extractGenerateForPatterns (build.yaml fallback),reads patterns from a reflection builder target,OK/OK,OK/OK
+,extractGenerateForPatterns (build.yaml fallback),reads the top-level generate_for shorthand,OK/OK,OK/OK
+,extractGenerateForPatterns (build.yaml fallback),returns empty for an unrelated build.yaml,OK/OK,OK/OK
+,extractBuilderOptions (build.yaml extension override),collects builder options including extension,OK/OK,OK/OK
+,G-REFL-3: flag-free single-project generation,the tool is a single-command project-traversal tool (no git),--/OK,OK/OK
+,G-REFL-3: flag-free single-project generation,flag-free args scope traversal to the current project (scan .),--/OK,OK/OK

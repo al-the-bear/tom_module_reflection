@@ -95,6 +95,18 @@ class ReflectionGeneratorExecutor extends CommandExecutor {
         return ItemResult.success(path: projectPath, name: context.name);
       }
 
+      if (result.hasFailures) {
+        // A resolution/generation crash is a hard failure — surface it so the
+        // buildkit item is marked failed rather than silently "succeeded".
+        return ItemResult.failure(
+          path: projectPath,
+          name: context.name,
+          error: 'Reflection generation failed for ${result.failedCount} '
+              'file(s) (generated ${result.processedCount}, '
+              'skipped ${result.skippedCount})',
+        );
+      }
+
       return ItemResult.success(
         path: projectPath,
         name: context.name,

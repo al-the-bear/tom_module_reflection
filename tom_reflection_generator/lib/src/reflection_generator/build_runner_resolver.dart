@@ -62,6 +62,19 @@ class BuildRunnerLibraryResolver implements LibraryResolver {
   Future<List<LibraryElement>> get libraries async {
     return await _resolver.libraries.toList();
   }
+
+  @override
+  Future<LibraryElement?> resolveFile(String filePath) {
+    // Path-based resolution is a standalone-CLI concept. Under build_runner the
+    // primary input is resolved through `BuildStep.inputLibrary`, so this
+    // adapter is never asked to resolve a raw path. Fail loud rather than
+    // return a misleading null if a future caller wires it up incorrectly.
+    throw UnsupportedError(
+      'BuildRunnerLibraryResolver.resolveFile is not supported: under '
+      'build_runner the input library comes from BuildStep.inputLibrary, not '
+      'a filesystem path ($filePath).',
+    );
+  }
 }
 
 /// Extension to convert between build_runner's AssetId and FileId.

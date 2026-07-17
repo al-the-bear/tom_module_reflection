@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:tom_reflection_generator/tom_reflection_generator.dart';
@@ -170,6 +172,112 @@ targets:
       expect(options['extension'], equals('.refl.dart'));
     });
   });
+
+  // RCK27: a resolution crash (e.g. a corrupt analyzer summary throwing
+  // RangeError) must be a distinct, loud failure — never collapsed into a
+  // benign "skipped" that lets the run report success while regenerating
+  // nothing. The seam is `LibraryResolver.resolveFile`: a thrown exception is a
+  // hard failure, a plain `null` return is a benign skip.
+  group('processReflectionFile outcome classification', () {
+    test('resolveFile throwing yields ReflectionFileOutcome.failed', () async {
+      final resolver = _ThrowingResolver(
+        StateError('corrupt summary: RangeError (index) in StringTable'),
+      );
+
+      final outcome = await processReflectionFile(
+        'lib/anything.dart',
+        '/project/root',
+        resolver,
+        false, // verbose
+        'tom_reflection',
+        '.reflection.dart',
+      );
+
+      expect(
+        outcome,
+        ReflectionFileOutcome.failed,
+        reason: 'a crash during resolution must be a hard failure, not a skip',
+      );
+    });
+
+    test('resolveFile returning null yields ReflectionFileOutcome.skipped',
+        () async {
+      final resolver = _NullResolver();
+
+      final outcome = await processReflectionFile(
+        'lib/part_file.dart',
+        '/project/root',
+        resolver,
+        false, // verbose
+        'tom_reflection',
+        '.reflection.dart',
+      );
+
+      expect(
+        outcome,
+        ReflectionFileOutcome.skipped,
+        reason: 'a non-library (null) result is a benign skip, not a failure',
+      );
+    });
+  });
+}
+
+/// A [LibraryResolver] whose [resolveFile] always throws, simulating a hard
+/// resolution failure such as a corrupt analyzer summary in the cache. All
+/// other members are unreachable for these tests and forwarded via
+/// [noSuchMethod].
+class _ThrowingResolver implements LibraryResolver {
+  _ThrowingResolver(this.error);
+
+  final Object error;
+
+  @override
+  Future<LibraryElement?> resolveFile(String filePath) async => throw error;
+
+  @override
+  Future<FileId?> fileIdForElement(LibraryElement library) =>
+      throw UnimplementedError();
+
+  @override
+  Future<LibraryElement> libraryFor(FileId fileId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<AstNode?> astNodeFor(Fragment fragment, {bool resolve = false}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<bool> isImportable(LibraryElement library, FileId fromFile) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<LibraryElement>> get libraries => throw UnimplementedError();
+}
+
+/// A [LibraryResolver] whose [resolveFile] returns null, simulating a file with
+/// no resolvable library (a benign skip).
+class _NullResolver implements LibraryResolver {
+  @override
+  Future<LibraryElement?> resolveFile(String filePath) async => null;
+
+  @override
+  Future<FileId?> fileIdForElement(LibraryElement library) =>
+      throw UnimplementedError();
+
+  @override
+  Future<LibraryElement> libraryFor(FileId fileId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<AstNode?> astNodeFor(Fragment fragment, {bool resolve = false}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<bool> isImportable(LibraryElement library, FileId fromFile) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<LibraryElement>> get libraries => throw UnimplementedError();
 }
 
 /// Creates a unique temp directory under the workspace `ztmp` folder (never

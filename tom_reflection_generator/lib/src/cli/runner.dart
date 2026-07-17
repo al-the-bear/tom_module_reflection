@@ -333,6 +333,14 @@ void _reportResult(
     print('Skipped: ${result.skippedCount} files');
   }
 
+  if (result.hasFailures) {
+    // A resolution/generation crash must fail the run loudly — never a silent
+    // "Done." with exit 0.
+    stderr.writeln('Failed: ${result.failedCount} files');
+    stderr.writeln('Reflection generation FAILED.');
+    exit(1);
+  }
+
   print('Done.');
 }
 

@@ -13,4 +13,5 @@ export 'cli.dart';
 export 'summary.dart';
 export 'src/generation/reflection_generation.dart';
 export 'src/reflection_generator/standalone_resolver.dart';
-export 'src/reflection_generator/library_resolver.dart' show FileId;
+export 'src/reflection_generator/library_resolver.dart'
+    show FileId, LibraryResolver;

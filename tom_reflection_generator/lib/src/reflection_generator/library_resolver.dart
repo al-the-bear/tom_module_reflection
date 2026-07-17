@@ -80,4 +80,17 @@ abstract class LibraryResolver {
 
   /// Gets all libraries visible from the project.
   Future<List<LibraryElement>> get libraries;
+
+  /// Resolves a specific [filePath] and returns its library element.
+  ///
+  /// Returns `null` **only** when the file genuinely has no resolvable library
+  /// (e.g. it is a part file, or the analyzer produced a non-library result).
+  /// That is a benign skip.
+  ///
+  /// Throws when resolution itself fails — for example a corrupt analyzer
+  /// summary in the cache. A thrown exception is a hard failure that callers
+  /// MUST surface loudly and MUST NOT collapse into a benign "skipped" outcome:
+  /// a run that regenerates nothing while reporting success is strictly worse
+  /// than a loud crash, because it leaves a stale `.reflection.dart` in place.
+  Future<LibraryElement?> resolveFile(String filePath);
 }

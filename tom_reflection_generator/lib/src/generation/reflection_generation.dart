@@ -64,11 +64,33 @@ class ReflectionGenerationOptions {
   final List<String> cacheOnlyPackages;
 }
 
+/// Per-file result of [processReflectionFile].
+///
+/// A crash during resolution/generation is a distinct outcome from a benign
+/// skip: it MUST be surfaced loudly and MUST fail the run. Collapsing the two
+/// (the historical behaviour) let a poisoned analyzer summary produce a
+/// "succeeded — 0 generated, 1 skipped" run that regenerated nothing and left
+/// a stale `.reflection.dart` in place.
+enum ReflectionFileOutcome {
+  /// An output `.reflection.dart` file was written.
+  generated,
+
+  /// The file was resolved but legitimately has nothing to generate (does not
+  /// use the reflection package, has no `main()` entry point, or resolved to a
+  /// non-library result). A benign skip.
+  skipped,
+
+  /// Resolution or generation threw. A hard failure — the run must exit
+  /// non-zero and must not be reported as succeeded.
+  failed,
+}
+
 /// Outcome of a reflection-generation run.
 class ReflectionGenerationResult {
   const ReflectionGenerationResult({
     required this.processedCount,
     required this.skippedCount,
+    this.failedCount = 0,
     this.cacheStatusShown = false,
     this.noFilesMatched = false,
   });
@@ -76,15 +98,23 @@ class ReflectionGenerationResult {
   /// Number of files for which reflection was generated.
   final int processedCount;
 
-  /// Number of files that were resolved but skipped (no reflection usage,
-  /// no entry point, or an error).
+  /// Number of files that were resolved but benignly skipped (no reflection
+  /// usage, no entry point, or a non-library result).
   final int skippedCount;
+
+  /// Number of files whose resolution or generation crashed. These are hard
+  /// failures, never benign skips.
+  final int failedCount;
 
   /// True when the run only displayed cache status and generated nothing.
   final bool cacheStatusShown;
 
   /// True when no input files matched the supplied targets.
   final bool noFilesMatched;
+
+  /// Whether any target file failed to resolve or generate. When true the run
+  /// must be treated as failed (non-zero exit).
+  bool get hasFailures => failedCount > 0;
 }
 
 /// Runs the full reflection-generation pipeline for [targets] (files,
@@ -151,6 +181,8 @@ Future<ReflectionGenerationResult> generateReflection({
 
     var processedCount = 0;
     var skippedCount = 0;
+    var failedCount = 0;
+    final failedFiles = <String>[];
 
     // Build-runner-style progress so a run is observable even in non-verbose
     // mode (e.g. when nested under buildkit, where this tool's stdout is the
@@ -165,7 +197,7 @@ Future<ReflectionGenerationResult> generateReflection({
       if (total > 1) {
         print('  [$index/$total] ${p.relative(filePath, from: root)}');
       }
-      final processed = await processReflectionFile(
+      final outcome = await processReflectionFile(
         filePath,
         root,
         resolver,
@@ -174,21 +206,39 @@ Future<ReflectionGenerationResult> generateReflection({
         options.outputExtension,
         useAllCapabilities: options.useAllCapabilities,
       );
-      if (processed) {
-        processedCount++;
-      } else {
-        skippedCount++;
+      switch (outcome) {
+        case ReflectionFileOutcome.generated:
+          processedCount++;
+        case ReflectionFileOutcome.skipped:
+          skippedCount++;
+        case ReflectionFileOutcome.failed:
+          failedCount++;
+          failedFiles.add(p.relative(filePath, from: root));
       }
     }
 
     stopwatch.stop();
-    print('Reflection generation succeeded after '
-        '${_formatElapsed(stopwatch.elapsed)} — '
-        '$processedCount generated, $skippedCount skipped.');
+    if (failedCount > 0) {
+      // A crash on an explicit target must be loud and must fail the run —
+      // never reported as "succeeded". Write to stderr so it stands out even
+      // when this tool is nested under another builder.
+      stderr.writeln('Reflection generation FAILED after '
+          '${_formatElapsed(stopwatch.elapsed)} — '
+          '$processedCount generated, $skippedCount skipped, '
+          '$failedCount failed.');
+      for (final failed in failedFiles) {
+        stderr.writeln('  FAILED: $failed');
+      }
+    } else {
+      print('Reflection generation succeeded after '
+          '${_formatElapsed(stopwatch.elapsed)} — '
+          '$processedCount generated, $skippedCount skipped.');
+    }
 
     return ReflectionGenerationResult(
       processedCount: processedCount,
       skippedCount: skippedCount,
+      failedCount: failedCount,
     );
   } finally {
     resolver.dispose();
@@ -285,12 +335,16 @@ void collectDartFilesFromDirectory(String dirPath, Set<String> files) {
 
 /// Generates reflection for a single [filePath].
 ///
-/// Returns true when an output file was written, false when the file was
-/// skipped (does not use reflection, has no entry point, or failed to resolve).
-Future<bool> processReflectionFile(
+/// Returns [ReflectionFileOutcome.generated] when an output file was written,
+/// [ReflectionFileOutcome.skipped] when the file legitimately has nothing to
+/// generate (does not use reflection, has no entry point, or resolves to a
+/// non-library result), and [ReflectionFileOutcome.failed] when resolution or
+/// generation *threw*. A thrown exception is a hard failure — it is reported
+/// prominently and never collapsed into a benign skip.
+Future<ReflectionFileOutcome> processReflectionFile(
   String filePath,
   String projectRoot,
-  StandaloneLibraryResolver resolver,
+  LibraryResolver resolver,
   bool verbose,
   String packageName,
   String outputExtension, {
@@ -307,7 +361,7 @@ Future<bool> processReflectionFile(
       if (verbose) {
         print('  Skipped: Could not resolve library');
       }
-      return false;
+      return ReflectionFileOutcome.skipped;
     }
 
     // Check if the file uses reflection.
@@ -316,7 +370,7 @@ Future<bool> processReflectionFile(
       if (verbose) {
         print('  Skipped: Does not use @$packageName');
       }
-      return false;
+      return ReflectionFileOutcome.skipped;
     }
 
     // Check if it has a main function (entry point).
@@ -324,7 +378,7 @@ Future<bool> processReflectionFile(
       if (verbose) {
         print('  Skipped: No main() entry point');
       }
-      return false;
+      return ReflectionFileOutcome.skipped;
     }
 
     // Generate the reflection code.
@@ -358,15 +412,16 @@ Future<bool> processReflectionFile(
     await File(outputPath).writeAsString(generatedSource);
 
     print('  Generated: $outputPath');
-    return true;
+    return ReflectionFileOutcome.generated;
   } catch (e, st) {
+    // A crash here (e.g. a corrupt analyzer summary in the cache throwing
+    // RangeError) is a hard failure, not a skip. Report it prominently on
+    // stderr and signal failure so the run exits non-zero.
+    stderr.writeln('  FAILED to process $filePath: $e');
     if (verbose) {
-      print('  Error: $e');
-      print('  Stack: $st');
-    } else {
-      print('  Error processing $filePath: $e');
+      stderr.writeln('  Stack: $st');
     }
-    return false;
+    return ReflectionFileOutcome.failed;
   }
 }
 
@@ -491,7 +546,7 @@ String _getPackageName(String projectRoot) {
 /// reflection [packageName].
 Future<bool> _usesReflection(
   LibraryElement library,
-  StandaloneLibraryResolver resolver,
+  LibraryResolver resolver,
   String packageName,
 ) async {
   final identifier = library.identifier;

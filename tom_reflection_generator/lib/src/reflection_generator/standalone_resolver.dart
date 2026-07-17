@@ -317,6 +317,14 @@ class StandaloneLibraryResolver implements LibraryResolver {
   }
 
   /// Resolves a specific file and returns its library element.
+  ///
+  /// Returns `null` only when the analyzer produces a non-library result for
+  /// the file (e.g. it is a part file) — a benign skip. A failure *inside*
+  /// resolution (for example a corrupt analyzer summary in the cache, which
+  /// throws `RangeError` from the bundle reader) is a hard failure: it is
+  /// **rethrown**, never swallowed. Callers must surface it loudly and fail the
+  /// run rather than reporting a "successful" regen that regenerated nothing.
+  @override
   Future<LibraryElement?> resolveFile(String filePath) async {
     // Normalize so a mixed-separator path (e.g. a forward-slash relative path
     // joined onto a backslash project root on Windows) is accepted by the
@@ -325,16 +333,11 @@ class StandaloneLibraryResolver implements LibraryResolver {
       p.isAbsolute(filePath) ? filePath : p.join(_projectRoot, filePath),
     );
 
-    try {
-      final context = _collection.contextFor(absolutePath);
-      final result =
-          await context.currentSession.getResolvedLibrary(absolutePath);
-      if (result is ResolvedLibraryResult) {
-        return result.element;
-      }
-    } catch (e) {
-      // File could not be resolved - log in verbose mode
-      stderr.writeln('  resolveFile error: $e');
+    final context = _collection.contextFor(absolutePath);
+    final result =
+        await context.currentSession.getResolvedLibrary(absolutePath);
+    if (result is ResolvedLibraryResult) {
+      return result.element;
     }
     return null;
   }

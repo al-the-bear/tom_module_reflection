@@ -20,8 +20,10 @@ dependencies:
   # tom_analyzer_shared provides the shared analyzer summary-cache
   # infrastructure (SummaryCacheManager, DependencyResolver, SummaryGenerator,
   # runSummaryCacheStage) reused by both this generator and tom_d4rt_generator.
-  # Floor 0.6.1 for the verbose per-summary cache-usage trace.
-  tom_analyzer_shared: ">=0.6.1"
+  # Floor 0.7.1: the summary cache must be partitioned by Dart SDK version (not
+  # just analyzer major), or a point-SDK bundle-format drift crashes the cached
+  # `.sum` reader with a RangeError and silently generates 0 files (RCJ3).
+  tom_analyzer_shared: ">=0.7.1"
   # tom_build_base provides the v2 tool framework (ToolRunner, ToolDefinition,
   # CommandExecutor) used to expose this generator as a single-command,
   # buildkit-nestable CLI tool.

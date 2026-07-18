@@ -10,7 +10,10 @@ void main() {
     group('core kernel analysis json', () {
       test('should contain all analyzer elements from core kernel', () async {
         final workspaceRoot = _findWorkspaceRoot();
-        final rootPath = p.join(workspaceRoot, 'core', 'tom_core_kernel');
+        // Post-restructure, the core packages live under `tom_ai/core/…`
+        // (they used to sit directly under the workspace root's `core/`).
+        final rootPath =
+            p.join(workspaceRoot, 'tom_ai', 'core', 'tom_core_kernel');
         final barrelPath = p.join(rootPath, 'lib', 'tom_core_kernel.dart');
         final jsonPath = p.join(rootPath, 'doc', 'analyzer_analysis.json');
 

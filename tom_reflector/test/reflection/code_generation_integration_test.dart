@@ -1,7 +1,31 @@
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:tom_reflector/src/reflection/generator/reflection_generator.dart';
 import 'package:tom_reflector/src/reflection/generator/reflection_config.dart';
 import 'package:tom_reflector/src/reflection/generator/entry_point_analyzer.dart';
+
+/// Extract the inline `flags` integer emitted for a class's `ClassMirrorData`
+/// entry. The generator writes each class as:
+///
+/// ```
+///   'Entity',  // name
+///   1,  // flags
+/// ```
+///
+/// so we anchor on the `'<name>',  // name` marker and read the following
+/// `<int>,  // flags` line.
+int _classFlagsFor(String code, String className) {
+  final marker = "'$className',  // name";
+  final idx = code.indexOf(marker);
+  expect(idx, greaterThanOrEqualTo(0),
+      reason: 'no ClassMirrorData entry for $className in generated code');
+  final match =
+      RegExp(r'(\d+),\s*//\s*flags').firstMatch(code.substring(idx));
+  expect(match, isNotNull, reason: 'no flags line after $className');
+  return int.parse(match!.group(1)!);
+}
 
 /// Integration tests for ReflectionGenerator code generation.
 ///
@@ -37,19 +61,6 @@ void main() {
         expect(code, contains("import 'package:tom_reflector/reflection_runtime.dart'"));
       });
 
-      test('generates bit flag constants', () async {
-        final code = await generator.generateFromResult(emptyResult);
-
-        // Class flags
-        expect(code, contains('const _abstract'));
-        expect(code, contains('const _mixin'));
-        expect(code, contains('const _sealed'));
-        expect(code, contains('const _final'));
-
-        // Member flags
-        expect(code, contains('const _static'));
-      });
-
       test('generates initialization function', () async {
         final code = await generator.generateFromResult(emptyResult);
 
@@ -69,6 +80,48 @@ void main() {
 
         expect(code, contains('_reflectionData'));
         expect(code, contains('ReflectionData'));
+      });
+    });
+
+    group('inline flag encoding', () {
+      // The generator no longer emits named `const _abstract`/`const _static`
+      // bit-flag constants — flag encoding moved inline, so each type/member
+      // now carries an integer literal annotated with `// flags`. An empty
+      // result exercises no members, so this drives a populated fixture.
+      final entryPoint = p.join(
+        Directory.current.path,
+        'test',
+        'reflection',
+        'fixtures',
+        'sample_models.dart',
+      );
+
+      late String code;
+
+      setUpAll(() async {
+        final generator = ReflectionGenerator.fromMap({
+          'entry_points': [entryPoint],
+        });
+        code = await generator.generate();
+      });
+
+      test('emits inline flag integers annotated with a flags comment',
+          () async {
+        expect(code, contains('// flags'),
+            reason:
+                'per-type/member flags must be emitted as inline integers');
+      });
+
+      test('sets the abstract bit for an abstract class', () async {
+        // `Entity` is abstract → bit 0 (1 << 0) set.
+        expect(_classFlagsFor(code, 'Entity') & (1 << 0), isNot(0),
+            reason: 'abstract class must carry the abstract flag bit');
+      });
+
+      test('clears the abstract bit for a concrete class', () async {
+        // `User` is concrete → bit 0 clear.
+        expect(_classFlagsFor(code, 'User') & (1 << 0), 0,
+            reason: 'concrete class must not carry the abstract flag bit');
       });
     });
 

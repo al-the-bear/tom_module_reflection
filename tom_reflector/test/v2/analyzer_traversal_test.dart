@@ -32,6 +32,22 @@ CommandContext createTestContext({
   );
 }
 
+/// Create a temp directory *inside* the workspace so the analyzer's `--scan`
+/// boundary guard (tom_build_base `validateScanPathWithinRoot`) accepts it.
+///
+/// `Directory.systemTemp` (`/tmp`) resolves outside the workspace root, and the
+/// v2 ToolRunner now rejects a `--scan` that escapes the workspace with
+/// "scan path is outside the workspace and was rejected". The tests here don't
+/// exercise out-of-tree scanning — they only need an empty/isolated directory —
+/// so they create it under the package's `.dart_tool`, which is inside the
+/// workspace *and* a hidden directory (so a recursive workspace scan skips it,
+/// keeping the throwaway project invisible to other traversals).
+Future<Directory> createWorkspaceTempDir(String prefix) {
+  final base = Directory(p.join('.dart_tool', 'tom_reflector_scan_tmp'));
+  base.createSync(recursive: true);
+  return base.createTemp(prefix);
+}
+
 /// Create a temporary project directory with optional buildkit.yaml.
 Future<Directory> createTempProject({
   String? analyzerConfig,
@@ -300,8 +316,10 @@ void main() {
         output: output,
       );
 
-      // Run in a temp dir with no projects — should succeed with 0 projects
-      final tempDir = await Directory.systemTemp.createTemp('analyzer_list_');
+      // Run in a temp dir with no projects — should succeed with 0 projects.
+      // The dir must be inside the workspace or the ToolRunner's `--scan`
+      // boundary guard rejects it (see createWorkspaceTempDir).
+      final tempDir = await createWorkspaceTempDir('analyzer_list_');
       try {
         final result = await runner
             .run(['--list', '--scan', tempDir.path, '--not-recursive']);
@@ -323,8 +341,8 @@ void main() {
       // analyzer must create the output's parent before writing (regression:
       // packages without a `doc/` folder previously failed with
       // PathNotFoundException).
-      final tempDir =
-          await Directory.systemTemp.createTemp('reflection_analyzer_out_');
+      // Inside the workspace so the `--scan` boundary guard accepts it.
+      final tempDir = await createWorkspaceTempDir('reflection_analyzer_out_');
       try {
         await File(p.join(tempDir.path, 'pubspec.yaml')).writeAsString('''
 name: ra_out_test

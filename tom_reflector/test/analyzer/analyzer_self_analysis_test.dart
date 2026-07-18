@@ -9,40 +9,34 @@ void main() {
   group('TomAnalyzer', () {
     group('self analysis json', () {
       test('should contain all analyzer elements from the package', () async {
-        final rootPath = _findTomAnalyzerRoot();
-        final barrelPath = p.join(rootPath, 'lib', 'tom_analyzer.dart');
+        // The former `tom_analyzer` package was folded into `tom_reflector`;
+        // the self-analysis fixture is this package's own barrel + doc dump.
+        final rootPath = _findTomReflectorRoot();
+        final barrelPath = p.join(rootPath, 'lib', 'tom_reflector.dart');
         final jsonPath = p.join(rootPath, 'doc', 'analyzer_analysis.json');
 
         await compareAnalyzerToJson(
           rootPath: rootPath,
           barrelPath: barrelPath,
           jsonPath: jsonPath,
-          packageName: 'tom_analyzer',
+          packageName: 'tom_reflector',
         );
       });
     });
   });
 }
 
-String _findTomAnalyzerRoot() {
-  final cwd = Directory.current;
-  final direct = File(p.join(cwd.path, 'pubspec.yaml'));
-  if (direct.existsSync() && direct.readAsStringSync().contains('name: tom_analyzer')) {
-    return cwd.path;
-  }
-  final nested = Directory(p.join(cwd.path, 'tom_analyzer'));
-  if (nested.existsSync()) {
-    return nested.path;
-  }
-  var current = cwd;
+String _findTomReflectorRoot() {
+  var current = Directory.current;
   while (true) {
-    final candidate = File(p.join(current.path, 'tom_analyzer', 'pubspec.yaml'));
-    if (candidate.existsSync()) {
-      return p.dirname(candidate.path);
+    final pubspec = File(p.join(current.path, 'pubspec.yaml'));
+    if (pubspec.existsSync() &&
+        pubspec.readAsStringSync().contains('name: tom_reflector')) {
+      return current.path;
     }
     final parent = current.parent;
     if (parent.path == current.path) {
-      throw StateError('Unable to locate tom_analyzer package root.');
+      throw StateError('Unable to locate tom_reflector package root.');
     }
     current = parent;
   }

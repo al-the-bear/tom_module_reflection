@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.1
+
+- **Fix: type-literal annotation arguments are now import-prefixed.** A bare
+  type name used as a constant annotation argument — e.g. the `EmailService`
+  in `@TomComponent(EmailService)` — is parsed as a `TypeLiteral`, an
+  expression kind the constant extractor did not handle. It fell through to
+  `Expression.toSource()` and was emitted UNQUALIFIED (`EmailService`), which
+  is an undefined name in the generated `.reflection.dart` library and fails
+  to compile (`Error: Undefined name 'EmailService'`). The extractor now
+  routes `TypeLiteral` through the type-annotation helper, so it carries the
+  correct import prefix (`prefixNN.EmailService`) and the owning library is
+  registered for import. See
+  `src/reflection_generator/constant_extractor.dart` (RCL1).
+
 ## 1.3.0
 
 - **Deterministic output.** Import prefixes (`prefix0`, `prefix1`, …) are now

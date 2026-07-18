@@ -210,6 +210,19 @@ Future<String> _extractConstantCode(
       }
     }
     
+    // --- Type Literals (a bare type name used as a value) ---
+    // E.g. the `EmailService` in `@TomComponent(EmailService)`. The parser
+    // models this as a `TypeLiteral` wrapping a `NamedType`. Without this
+    // case it falls through to `expression.toSource()` below and is emitted
+    // UNQUALIFIED (`EmailService`), which is an undefined name in the
+    // generated library and fails to compile. Route it through the type
+    // annotation helper so it carries the correct import prefix
+    // (`prefixNN.EmailService`) and the owning library is registered for
+    // import.
+    if (expression is TypeLiteral) {
+      return await typeAnnotationHelper(expression.type);
+    }
+
     // --- Primitive Literals ---
     // These can be converted directly to source code
     assert(

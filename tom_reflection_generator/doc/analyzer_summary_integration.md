@@ -160,9 +160,6 @@ class SummaryCacheManager {
   
   /// Writes a summary for a package.
   Future<void> writeSummary(String packageName, String version, Uint8List bytes);
-  
-  /// Clears outdated summaries (different SDK version).
-  Future<void> cleanOutdated();
 }
 ```
 

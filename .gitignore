@@ -295,3 +295,8 @@ bk_master.yaml
 
 # Local development folders (repo-specific - add as needed)
 # /some_local_folder/
+
+# Test run logs, baselines and analysis — machine-generated, never versioned.
+# These live in a `testlog/` folder next to each project's `doc/` folder.
+# The `doc/` folder itself is fully tracked (no test artifacts written there).
+**/testlog/

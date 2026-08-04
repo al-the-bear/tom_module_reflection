@@ -21,7 +21,14 @@ dependencies:
   # Shared analyzer-tooling utilities. tom_reflector consumes only the runtime
   # Dart-SDK locator (resolveDartSdkPath) so AOT-compiled binaries find the SDK;
   # it does NOT use the summary-cache feature (see analyzer_context_builder).
-  tom_analyzer_shared: ">=0.6.0"
+  #
+  # The floor is 0.7.0 or above even so, because tom_reflector sits above a
+  # large part of the workspace: everything resolving through it inherits the
+  # bound, and a bound admitting 0.6.x admits the abandoned
+  # `.tom/tom_tool_cache/` summary root for those packages that DO use the
+  # cache. Pinned to the current release rather than a bare `>=0.7.0` so the
+  # floor states what is actually exercised.
+  tom_analyzer_shared: ">=0.7.5"
   tom_build_base: ">=2.6.25"
   tom_d4rt_ast:
     path: ../../d4rt/tom_d4rt_ast

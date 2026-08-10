@@ -1,3 +1,8 @@
 # https://dart.dev/guides/libraries/private-files
 # Created by `dart pub`
 .dart_tool/
+
+# Output of the end-to-end generator tests, written next to their input fixture
+# and deleted again on teardown. A tracked copy would be stale by construction —
+# the point of those tests is that the emitter produces it fresh.
+test/fixtures/*.reflection.dart

@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.3.2
+
+- **Fix: a type annotation no longer carries the originating library's import
+  prefix into the generated file.** Type annotations in constant expressions
+  were emitted by prepending the generated prefix to the annotation's *source
+  text*. For an annotation written through an import prefix — `lib.Imported`,
+  or a type argument such as `List<lib.Imported>` — the source prefix came
+  along, producing `prefixNN.lib.Imported`: the name `lib` is not in scope in
+  the generated library, so it fails to compile with "The name 'lib' is being
+  referenced through the prefix 'prefixNN', but it isn't defined in any of the
+  libraries imported using that prefix". The helper now rebuilds the annotation
+  from its parts (prefix + simple name + type arguments, the latter re-qualified
+  recursively) instead of reusing source text. See
+  `src/reflection_generator/constant_extractor.dart`.
+- `dynamic` and `void` used as type arguments (e.g. `<String, dynamic>{}`) no
+  longer raise a spurious `constant.type_annotation.unsupported` severe
+  diagnostic. They belong to no library, take no prefix, and were already
+  emitted correctly — only the diagnostic was wrong.
+- **Test: the 1.3.1 type-literal fix is now covered.** A new end-to-end suite
+  (`test/default_value_prefix_test.dart`) runs the real generator over a fixture
+  whose optional parameters put a type literal in every position it can occupy —
+  bare, map key, map value, list element, set element, nested collection, and
+  behind a source import prefix — asserts the generated prefix in each, and
+  resolves the emitted library with `dart analyze` so an unqualified name in any
+  *other* position fails the suite too.
+
 ## 1.3.1
 
 - **Fix: type-literal annotation arguments are now import-prefixed.** A bare

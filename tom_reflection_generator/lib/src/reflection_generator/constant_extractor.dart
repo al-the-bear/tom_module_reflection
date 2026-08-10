@@ -75,18 +75,42 @@ Future<String> _extractConstantCode(
   LibraryResolver resolver,
 ) async {
   // Helper to process type annotations in collection literals
+  //
+  // Rebuilds the annotation from its parts rather than re-using its source
+  // text. Source text carries the *originating* library's import prefix
+  // (`lib.Imported`), which names nothing in the generated library; prepending
+  // the generated prefix to it yields `prefixNN.lib.Imported`, which is worse
+  // than the unqualified name because it looks deliberate. Type arguments are
+  // re-qualified the same way, recursively, so `List<lib.Imported>` does not
+  // smuggle a source prefix through in the one position `$typeName` would have
+  // copied verbatim.
   Future<String> typeAnnotationHelper(TypeAnnotation typeName) async {
-    DartType? interfaceType = typeName.type;
-    if (interfaceType is InterfaceType) {
-      LibraryElement library = interfaceType.element.library;
+    DartType? annotatedType = typeName.type;
+    if (typeName is NamedType && annotatedType is InterfaceType) {
+      LibraryElement library = annotatedType.element.library;
       String prefix = importCollector._getPrefix(library);
-      return '$prefix$typeName';
+      StringBuffer result = StringBuffer('$prefix${typeName.name.lexeme}');
+      TypeArgumentList? typeArguments = typeName.typeArguments;
+      if (typeArguments != null) {
+        List<String> arguments = <String>[];
+        for (TypeAnnotation argument in typeArguments.arguments) {
+          arguments.add(await typeAnnotationHelper(argument));
+        }
+        result.write('<${arguments.join(', ')}>');
+      }
+      if (typeName.question != null) result.write('?');
+      return result.toString();
+    } else if (annotatedType is DynamicType || annotatedType is VoidType) {
+      // `dynamic` and `void` belong to no library and take no prefix. They are
+      // ordinary type arguments (`<String, dynamic>{}`), not an unsupported
+      // construct, so they must not raise a diagnostic.
+      return '$typeName';
     } else {
       await _severe(
         'constant.type_annotation.unsupported',
         'Not yet supported! '
         'Encountered unexpected kind of type annotation: '
-        '$typeName (type: ${interfaceType?.runtimeType})',
+        '$typeName (type: ${annotatedType?.runtimeType})',
       );
       return '$typeName';
     }

@@ -10,8 +10,6 @@ dependencies:
   analyzer: ^10.0.0
   path: ^1.9.1
   yaml: ^3.1.3
-  tom_d4rt_ast:
-    path: ../../../../../d4rt/tom_d4rt_ast
   tom_reflector:
     path: ../../../
 

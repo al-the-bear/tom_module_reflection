@@ -1,19 +1,19 @@
 /// Converts analyzer AST to serializable AST.
 ///
 /// This converter transforms nodes from `package:analyzer/dart/ast/ast.dart`
-/// to their serializable equivalents in `package:tom_d4rt_ast`.
+/// to their serializable equivalents in `package:tom_ast_model`.
 library;
 
 import 'package:analyzer/dart/ast/ast.dart' as a;
 import 'package:analyzer/dart/ast/token.dart' as t;
-import 'package:tom_d4rt_ast/tom_d4rt_ast.dart';
+import 'package:tom_ast_model/tom_ast_model.dart';
 
 /// Converts analyzer AST nodes to serializable AST nodes.
 ///
 /// Usage:
 /// ```dart
 /// import 'package:analyzer/dart/analysis/utilities.dart';
-/// import 'package:tom_reflector/ast.dart';
+/// import 'package:tom_reflector/src/ast/converter.dart';
 ///
 /// final parseResult = parseString(content: sourceCode);
 /// final converter = AstConverter();

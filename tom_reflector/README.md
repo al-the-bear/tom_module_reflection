@@ -239,11 +239,13 @@ tom_reflector_model   pure serializable model (AnalysisResult, ClassInfo, …)
 tom_reflector         THIS PACKAGE — analyzer engine + `reflector` CLI → *.r.dart
       │ builds on
       ├── tom_build_base   v2 tool framework (CLI, navigation, version flags)
-      └── tom_d4rt_ast     AST modelling (cross-repo: tom_ai/d4rt/)
+      └── tom_ast_model    serializable mirror AST (cross-repo: tom_ai/d4rt/)
 ```
 
-> `tom_d4rt_ast` lives in the **d4rt** repo; changes there can affect this
-> package — coordinate with the d4rt quest on breaking changes.
+> `tom_ast_model` lives in the **d4rt** repo; changes there can affect this
+> package — coordinate with the d4rt quest on breaking changes. It is consumed
+> hosted, with a version floor, so what this package was tested against is on
+> the record rather than being whatever the sibling checkout holds.
 
 This is the engine-2 generator. The runtime mirror engine
 ([`tom_reflection`](../tom_reflection/README.md)) is a separate technology with

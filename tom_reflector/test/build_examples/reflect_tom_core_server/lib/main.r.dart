@@ -1,17 +1,296 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
 import 'package:tom_reflector/tom_reflector.dart' as ta;
-import 'package:mysql_client/mysql_client.dart' as lib0;
-import 'package:reflect_tom_core_server/main.dart' as lib1;
-import 'package:tom_basics/tom_basics.dart' as lib2;
-import 'package:tom_basics_console/tom_basics_console.dart' as lib3;
-import 'package:tom_core_kernel/tom_core_kernel.dart' as lib4;
-import 'package:tom_core_server/tom_core_server.dart' as lib5;
-import 'package:tom_crypto/tom_crypto.dart' as lib6;
-import 'package:tom_reflection/generated.dart' as lib7;
-import 'package:tom_reflection/tom_reflection.dart' as lib8;
+import 'package:mysql_client/exception.dart' as lib0;
+import 'package:tom_reflection/tom_reflection.dart' as lib1;
 
 final _classes = <String, ta.ClassDescriptor>{
+'package:mysql_client/exception.dart.MySQLClientException': ta.ClassDescriptor(
+  name: 'MySQLClientException',
+  qualifiedName: 'package:mysql_client/exception.dart.MySQLClientException',
+  libraryUri: 'package:mysql_client/exception.dart',
+  package: 'mysql_client',
+  annotations: const [],
+  typeParameters: const [],
+  isAbstract: false,
+  isSealed: false,
+  isFinal: false,
+  isBase: false,
+  isInterface: false,
+  isMixinClass: false,
+  methods: <String, ta.MethodDescriptor>{
+  'toString': ta.MethodDescriptor(
+    name: 'toString',
+    isStatic: false,
+    isAbstract: false,
+    isOperator: false,
+    returnTypeQualifiedName: 'dart:core.String',
+    declaringClassQualifiedName: 'package:mysql_client/exception.dart.MySQLException',
+    typeParameters: const [],
+    parameters: const [],
+    annotations: [
+ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
+],
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.MySQLClientException).toString, positional, named),
+    invokeStatic: null,
+  ),
+  },
+  staticMethods: const {},
+  fields: <String, ta.FieldDescriptor>{
+  'message': ta.FieldDescriptor(
+    name: 'message',
+    typeQualifiedName: 'dart:core.String',
+    isStatic: false,
+    isFinal: true,
+    isConst: false,
+    declaringClassQualifiedName: 'package:mysql_client/exception.dart.MySQLException',
+    annotations: const [],
+    getInstance: (Object instance) => (instance as lib0.MySQLClientException).message,
+    setInstance: null,
+    getStatic: null,
+    setStatic: null,
+  ),
+  },
+  staticFields: const {},
+  getters: const {},
+  staticGetters: const {},
+  setters: const {},
+  staticSetters: const {},
+  superclassQualifiedName: 'package:mysql_client/exception.dart.MySQLException',
+  interfaceQualifiedNames: const [],
+  mixinQualifiedNames: const [],
+  appliedExtensionQualifiedNames: const [],
+  constructors: <String, ta.ConstructorDescriptor>{
+    'new': ta.ConstructorDescriptor(
+      name: 'new',
+      isFactory: false,
+      parameters: [
+ta.ParameterDescriptor(name: 'message',typeQualifiedName: 'dart:core.String',isRequired: true,isNamed: false,isPositional: true,hasDefaultValue: false,defaultValue: null,annotations: const [],)
+],
+      annotations: const [],
+      invoke: (List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply(lib0.MySQLClientException.new, positional, named),
+    ),
+  },
+  isInstance: (Object instance) => instance is lib0.MySQLClientException,
+),
+'package:mysql_client/exception.dart.MySQLException': ta.ClassDescriptor(
+  name: 'MySQLException',
+  qualifiedName: 'package:mysql_client/exception.dart.MySQLException',
+  libraryUri: 'package:mysql_client/exception.dart',
+  package: 'mysql_client',
+  annotations: const [],
+  typeParameters: const [],
+  isAbstract: true,
+  isSealed: false,
+  isFinal: false,
+  isBase: false,
+  isInterface: false,
+  isMixinClass: false,
+  methods: <String, ta.MethodDescriptor>{
+  'toString': ta.MethodDescriptor(
+    name: 'toString',
+    isStatic: false,
+    isAbstract: false,
+    isOperator: false,
+    returnTypeQualifiedName: 'dart:core.String',
+    declaringClassQualifiedName: null,
+    typeParameters: const [],
+    parameters: const [],
+    annotations: [
+ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
+],
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.MySQLException).toString, positional, named),
+    invokeStatic: null,
+  ),
+  },
+  staticMethods: const {},
+  fields: <String, ta.FieldDescriptor>{
+  'message': ta.FieldDescriptor(
+    name: 'message',
+    typeQualifiedName: 'dart:core.String',
+    isStatic: false,
+    isFinal: true,
+    isConst: false,
+    declaringClassQualifiedName: null,
+    annotations: const [],
+    getInstance: (Object instance) => (instance as lib0.MySQLException).message,
+    setInstance: null,
+    getStatic: null,
+    setStatic: null,
+  ),
+  },
+  staticFields: const {},
+  getters: const {},
+  staticGetters: const {},
+  setters: const {},
+  staticSetters: const {},
+  superclassQualifiedName: 'dart:core.Object',
+  interfaceQualifiedNames: <String>['dart:core.Exception'],
+  mixinQualifiedNames: const [],
+  appliedExtensionQualifiedNames: const [],
+  constructors: <String, ta.ConstructorDescriptor>{
+    'new': ta.ConstructorDescriptor(
+      name: 'new',
+      isFactory: false,
+      parameters: [
+ta.ParameterDescriptor(name: 'message',typeQualifiedName: 'dart:core.String',isRequired: true,isNamed: false,isPositional: true,hasDefaultValue: false,defaultValue: null,annotations: const [],)
+],
+      annotations: const [],
+      invoke: null,
+    ),
+  },
+  isInstance: (Object instance) => instance is lib0.MySQLException,
+),
+'package:mysql_client/exception.dart.MySQLProtocolException': ta.ClassDescriptor(
+  name: 'MySQLProtocolException',
+  qualifiedName: 'package:mysql_client/exception.dart.MySQLProtocolException',
+  libraryUri: 'package:mysql_client/exception.dart',
+  package: 'mysql_client',
+  annotations: const [],
+  typeParameters: const [],
+  isAbstract: false,
+  isSealed: false,
+  isFinal: false,
+  isBase: false,
+  isInterface: false,
+  isMixinClass: false,
+  methods: <String, ta.MethodDescriptor>{
+  'toString': ta.MethodDescriptor(
+    name: 'toString',
+    isStatic: false,
+    isAbstract: false,
+    isOperator: false,
+    returnTypeQualifiedName: 'dart:core.String',
+    declaringClassQualifiedName: 'package:mysql_client/exception.dart.MySQLException',
+    typeParameters: const [],
+    parameters: const [],
+    annotations: [
+ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
+],
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.MySQLProtocolException).toString, positional, named),
+    invokeStatic: null,
+  ),
+  },
+  staticMethods: const {},
+  fields: <String, ta.FieldDescriptor>{
+  'message': ta.FieldDescriptor(
+    name: 'message',
+    typeQualifiedName: 'dart:core.String',
+    isStatic: false,
+    isFinal: true,
+    isConst: false,
+    declaringClassQualifiedName: 'package:mysql_client/exception.dart.MySQLException',
+    annotations: const [],
+    getInstance: (Object instance) => (instance as lib0.MySQLProtocolException).message,
+    setInstance: null,
+    getStatic: null,
+    setStatic: null,
+  ),
+  },
+  staticFields: const {},
+  getters: const {},
+  staticGetters: const {},
+  setters: const {},
+  staticSetters: const {},
+  superclassQualifiedName: 'package:mysql_client/exception.dart.MySQLClientException',
+  interfaceQualifiedNames: const [],
+  mixinQualifiedNames: const [],
+  appliedExtensionQualifiedNames: const [],
+  constructors: <String, ta.ConstructorDescriptor>{
+    'new': ta.ConstructorDescriptor(
+      name: 'new',
+      isFactory: false,
+      parameters: [
+ta.ParameterDescriptor(name: 'message',typeQualifiedName: 'dart:core.String',isRequired: true,isNamed: false,isPositional: true,hasDefaultValue: false,defaultValue: null,annotations: const [],)
+],
+      annotations: const [],
+      invoke: (List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply(lib0.MySQLProtocolException.new, positional, named),
+    ),
+  },
+  isInstance: (Object instance) => instance is lib0.MySQLProtocolException,
+),
+'package:mysql_client/exception.dart.MySQLServerException': ta.ClassDescriptor(
+  name: 'MySQLServerException',
+  qualifiedName: 'package:mysql_client/exception.dart.MySQLServerException',
+  libraryUri: 'package:mysql_client/exception.dart',
+  package: 'mysql_client',
+  annotations: const [],
+  typeParameters: const [],
+  isAbstract: false,
+  isSealed: false,
+  isFinal: false,
+  isBase: false,
+  isInterface: false,
+  isMixinClass: false,
+  methods: <String, ta.MethodDescriptor>{
+  'toString': ta.MethodDescriptor(
+    name: 'toString',
+    isStatic: false,
+    isAbstract: false,
+    isOperator: false,
+    returnTypeQualifiedName: 'dart:core.String',
+    declaringClassQualifiedName: null,
+    typeParameters: const [],
+    parameters: const [],
+    annotations: [
+ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
+],
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.MySQLServerException).toString, positional, named),
+    invokeStatic: null,
+  ),
+  },
+  staticMethods: const {},
+  fields: <String, ta.FieldDescriptor>{
+  'errorCode': ta.FieldDescriptor(
+    name: 'errorCode',
+    typeQualifiedName: 'dart:core.int',
+    isStatic: false,
+    isFinal: true,
+    isConst: false,
+    declaringClassQualifiedName: null,
+    annotations: const [],
+    getInstance: (Object instance) => (instance as lib0.MySQLServerException).errorCode,
+    setInstance: null,
+    getStatic: null,
+    setStatic: null,
+  ),
+  'message': ta.FieldDescriptor(
+    name: 'message',
+    typeQualifiedName: 'dart:core.String',
+    isStatic: false,
+    isFinal: true,
+    isConst: false,
+    declaringClassQualifiedName: 'package:mysql_client/exception.dart.MySQLException',
+    annotations: const [],
+    getInstance: (Object instance) => (instance as lib0.MySQLServerException).message,
+    setInstance: null,
+    getStatic: null,
+    setStatic: null,
+  ),
+  },
+  staticFields: const {},
+  getters: const {},
+  staticGetters: const {},
+  setters: const {},
+  staticSetters: const {},
+  superclassQualifiedName: 'package:mysql_client/exception.dart.MySQLException',
+  interfaceQualifiedNames: const [],
+  mixinQualifiedNames: const [],
+  appliedExtensionQualifiedNames: const [],
+  constructors: <String, ta.ConstructorDescriptor>{
+    'new': ta.ConstructorDescriptor(
+      name: 'new',
+      isFactory: false,
+      parameters: [
+ta.ParameterDescriptor(name: 'message',typeQualifiedName: 'dart:core.String',isRequired: true,isNamed: false,isPositional: true,hasDefaultValue: false,defaultValue: null,annotations: const [],),
+ta.ParameterDescriptor(name: 'errorCode',typeQualifiedName: 'dart:core.int',isRequired: true,isNamed: false,isPositional: true,hasDefaultValue: false,defaultValue: null,annotations: const [],)
+],
+      annotations: const [],
+      invoke: (List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply(lib0.MySQLServerException.new, positional, named),
+    ),
+  },
+  isInstance: (Object instance) => instance is lib0.MySQLServerException,
+),
 'package:tom_reflection/tom_reflection.dart.Reflection': ta.ClassDescriptor(
   name: 'Reflection',
   qualifiedName: 'package:tom_reflection/tom_reflection.dart.Reflection',
@@ -40,7 +319,7 @@ ta.ParameterDescriptor(name: 'reflectee',typeQualifiedName: 'dart:core.Object',i
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib8.Reflection).canReflect, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib1.Reflection).canReflect, positional, named),
     invokeStatic: null,
   ),
   'reflect': ta.MethodDescriptor(
@@ -57,7 +336,7 @@ ta.ParameterDescriptor(name: 'reflectee',typeQualifiedName: 'dart:core.Object',i
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib8.Reflection).reflect, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib1.Reflection).reflect, positional, named),
     invokeStatic: null,
   ),
   'canReflectType': ta.MethodDescriptor(
@@ -74,7 +353,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib8.Reflection).canReflectType, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib1.Reflection).canReflectType, positional, named),
     invokeStatic: null,
   ),
   'reflectType': ta.MethodDescriptor(
@@ -91,7 +370,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib8.Reflection).reflectType, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib1.Reflection).reflectType, positional, named),
     invokeStatic: null,
   ),
   'findLibrary': ta.MethodDescriptor(
@@ -108,7 +387,7 @@ ta.ParameterDescriptor(name: 'libraryName',typeQualifiedName: 'dart:core.String'
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib8.Reflection).findLibrary, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib1.Reflection).findLibrary, positional, named),
     invokeStatic: null,
   ),
   },
@@ -126,7 +405,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
 ],
     annotations: const [],
     invokeOn: null,
-    invokeStatic: (List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply(lib8.Reflection.getInstance, positional, named),
+    invokeStatic: (List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply(lib1.Reflection.getInstance, positional, named),
   ),
   },
   fields: <String, ta.FieldDescriptor>{
@@ -138,7 +417,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     isConst: false,
     declaringClassQualifiedName: 'package:tom_reflection/src/reflection/reflection_builder_based.dart.ReflectionImpl',
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.Reflection).libraries,
+    getInstance: (Object instance) => (instance as lib1.Reflection).libraries,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -151,7 +430,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     isConst: false,
     declaringClassQualifiedName: 'package:tom_reflection/src/reflection/reflection_builder_based.dart.ReflectionImpl',
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.Reflection).annotatedClasses,
+    getInstance: (Object instance) => (instance as lib1.Reflection).annotatedClasses,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -168,7 +447,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     annotations: const [],
     getInstance: null,
     setInstance: null,
-    getStatic: () => lib8.Reflection.thisClassName,
+    getStatic: () => lib1.Reflection.thisClassName,
     setStatic: null,
   ),
   'thisClassId': ta.FieldDescriptor(
@@ -181,7 +460,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     annotations: const [],
     getInstance: null,
     setInstance: null,
-    getStatic: () => lib8.Reflection.thisClassId,
+    getStatic: () => lib1.Reflection.thisClassId,
     setStatic: null,
   ),
   },
@@ -222,7 +501,7 @@ ta.ParameterDescriptor(name: 'cap9',typeQualifiedName: 'package:tom_reflection/s
       invoke: null,
     ),
   },
-  isInstance: (Object instance) => instance is lib8.Reflection,
+  isInstance: (Object instance) => instance is lib1.Reflection,
 ),
 'package:tom_reflection/tom_reflection.dart.ReflectionInterface': ta.ClassDescriptor(
   name: 'ReflectionInterface',
@@ -324,7 +603,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.ReflectionInterface).libraries,
+    getInstance: (Object instance) => (instance as lib1.ReflectionInterface).libraries,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -337,7 +616,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.ReflectionInterface).annotatedClasses,
+    getInstance: (Object instance) => (instance as lib1.ReflectionInterface).annotatedClasses,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -361,7 +640,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
       invoke: null,
     ),
   },
-  isInstance: (Object instance) => instance is lib8.ReflectionInterface,
+  isInstance: (Object instance) => instance is lib1.ReflectionInterface,
 ),
 'package:tom_reflection/tom_reflection.dart.StringInvocation': ta.ClassDescriptor(
   name: 'StringInvocation',
@@ -387,7 +666,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.StringInvocation).memberName,
+    getInstance: (Object instance) => (instance as lib1.StringInvocation).memberName,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -400,7 +679,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.StringInvocation).positionalArguments,
+    getInstance: (Object instance) => (instance as lib1.StringInvocation).positionalArguments,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -413,7 +692,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.StringInvocation).namedArguments,
+    getInstance: (Object instance) => (instance as lib1.StringInvocation).namedArguments,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -426,7 +705,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.StringInvocation).isMethod,
+    getInstance: (Object instance) => (instance as lib1.StringInvocation).isMethod,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -439,7 +718,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.StringInvocation).isGetter,
+    getInstance: (Object instance) => (instance as lib1.StringInvocation).isGetter,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -452,7 +731,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.StringInvocation).isSetter,
+    getInstance: (Object instance) => (instance as lib1.StringInvocation).isSetter,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -465,7 +744,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib8.StringInvocation).isAccessor,
+    getInstance: (Object instance) => (instance as lib1.StringInvocation).isAccessor,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -489,7 +768,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
       invoke: null,
     ),
   },
-  isInstance: (Object instance) => instance is lib8.StringInvocation,
+  isInstance: (Object instance) => instance is lib1.StringInvocation,
 ),
 };
 final _enums = <String, ta.MemberContainerDescriptor>{

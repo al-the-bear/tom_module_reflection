@@ -1,12 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
 import 'package:tom_reflector/tom_reflector.dart' as ta;
-import 'package:reflect_tom_core_kernel/main.dart' as lib0;
-import 'package:tom_basics/tom_basics.dart' as lib1;
-import 'package:tom_core_kernel/tom_core_kernel.dart' as lib2;
-import 'package:tom_crypto/tom_crypto.dart' as lib3;
-import 'package:tom_reflection/generated.dart' as lib4;
-import 'package:tom_reflection/tom_reflection.dart' as lib5;
+import 'package:tom_reflection/tom_reflection.dart' as lib0;
 
 final _classes = <String, ta.ClassDescriptor>{
 'package:tom_reflection/tom_reflection.dart.Reflection': ta.ClassDescriptor(
@@ -37,7 +32,7 @@ ta.ParameterDescriptor(name: 'reflectee',typeQualifiedName: 'dart:core.Object',i
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib5.Reflection).canReflect, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.Reflection).canReflect, positional, named),
     invokeStatic: null,
   ),
   'reflect': ta.MethodDescriptor(
@@ -54,7 +49,7 @@ ta.ParameterDescriptor(name: 'reflectee',typeQualifiedName: 'dart:core.Object',i
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib5.Reflection).reflect, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.Reflection).reflect, positional, named),
     invokeStatic: null,
   ),
   'canReflectType': ta.MethodDescriptor(
@@ -71,7 +66,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib5.Reflection).canReflectType, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.Reflection).canReflectType, positional, named),
     invokeStatic: null,
   ),
   'reflectType': ta.MethodDescriptor(
@@ -88,7 +83,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib5.Reflection).reflectType, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.Reflection).reflectType, positional, named),
     invokeStatic: null,
   ),
   'findLibrary': ta.MethodDescriptor(
@@ -105,7 +100,7 @@ ta.ParameterDescriptor(name: 'libraryName',typeQualifiedName: 'dart:core.String'
     annotations: [
 ta.AnnotationDescriptor(name: 'override',qualifiedName: 'dart:core.override',positionalArguments: <Object?>[],namedArguments: const <String, Object?>{},)
 ],
-    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib5.Reflection).findLibrary, positional, named),
+    invokeOn: (Object instance, List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply((instance as lib0.Reflection).findLibrary, positional, named),
     invokeStatic: null,
   ),
   },
@@ -123,7 +118,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
 ],
     annotations: const [],
     invokeOn: null,
-    invokeStatic: (List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply(lib5.Reflection.getInstance, positional, named),
+    invokeStatic: (List<dynamic> positional, Map<Symbol, dynamic> named) => Function.apply(lib0.Reflection.getInstance, positional, named),
   ),
   },
   fields: <String, ta.FieldDescriptor>{
@@ -135,7 +130,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     isConst: false,
     declaringClassQualifiedName: 'package:tom_reflection/src/reflection/reflection_builder_based.dart.ReflectionImpl',
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.Reflection).libraries,
+    getInstance: (Object instance) => (instance as lib0.Reflection).libraries,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -148,7 +143,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     isConst: false,
     declaringClassQualifiedName: 'package:tom_reflection/src/reflection/reflection_builder_based.dart.ReflectionImpl',
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.Reflection).annotatedClasses,
+    getInstance: (Object instance) => (instance as lib0.Reflection).annotatedClasses,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -165,7 +160,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     annotations: const [],
     getInstance: null,
     setInstance: null,
-    getStatic: () => lib5.Reflection.thisClassName,
+    getStatic: () => lib0.Reflection.thisClassName,
     setStatic: null,
   ),
   'thisClassId': ta.FieldDescriptor(
@@ -178,7 +173,7 @@ ta.ParameterDescriptor(name: 'type',typeQualifiedName: 'dart:core.Type',isRequir
     annotations: const [],
     getInstance: null,
     setInstance: null,
-    getStatic: () => lib5.Reflection.thisClassId,
+    getStatic: () => lib0.Reflection.thisClassId,
     setStatic: null,
   ),
   },
@@ -219,7 +214,7 @@ ta.ParameterDescriptor(name: 'cap9',typeQualifiedName: 'package:tom_reflection/s
       invoke: null,
     ),
   },
-  isInstance: (Object instance) => instance is lib5.Reflection,
+  isInstance: (Object instance) => instance is lib0.Reflection,
 ),
 'package:tom_reflection/tom_reflection.dart.ReflectionInterface': ta.ClassDescriptor(
   name: 'ReflectionInterface',
@@ -321,7 +316,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.ReflectionInterface).libraries,
+    getInstance: (Object instance) => (instance as lib0.ReflectionInterface).libraries,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -334,7 +329,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.ReflectionInterface).annotatedClasses,
+    getInstance: (Object instance) => (instance as lib0.ReflectionInterface).annotatedClasses,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -358,7 +353,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
       invoke: null,
     ),
   },
-  isInstance: (Object instance) => instance is lib5.ReflectionInterface,
+  isInstance: (Object instance) => instance is lib0.ReflectionInterface,
 ),
 'package:tom_reflection/tom_reflection.dart.StringInvocation': ta.ClassDescriptor(
   name: 'StringInvocation',
@@ -384,7 +379,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.StringInvocation).memberName,
+    getInstance: (Object instance) => (instance as lib0.StringInvocation).memberName,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -397,7 +392,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.StringInvocation).positionalArguments,
+    getInstance: (Object instance) => (instance as lib0.StringInvocation).positionalArguments,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -410,7 +405,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.StringInvocation).namedArguments,
+    getInstance: (Object instance) => (instance as lib0.StringInvocation).namedArguments,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -423,7 +418,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.StringInvocation).isMethod,
+    getInstance: (Object instance) => (instance as lib0.StringInvocation).isMethod,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -436,7 +431,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.StringInvocation).isGetter,
+    getInstance: (Object instance) => (instance as lib0.StringInvocation).isGetter,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -449,7 +444,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.StringInvocation).isSetter,
+    getInstance: (Object instance) => (instance as lib0.StringInvocation).isSetter,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -462,7 +457,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
     isConst: false,
     declaringClassQualifiedName: null,
     annotations: const [],
-    getInstance: (Object instance) => (instance as lib5.StringInvocation).isAccessor,
+    getInstance: (Object instance) => (instance as lib0.StringInvocation).isAccessor,
     setInstance: null,
     getStatic: null,
     setStatic: null,
@@ -486,7 +481,7 @@ ta.ParameterDescriptor(name: 'library',typeQualifiedName: 'dart:core.String',isR
       invoke: null,
     ),
   },
-  isInstance: (Object instance) => instance is lib5.StringInvocation,
+  isInstance: (Object instance) => instance is lib0.StringInvocation,
 ),
 };
 final _enums = <String, ta.MemberContainerDescriptor>{

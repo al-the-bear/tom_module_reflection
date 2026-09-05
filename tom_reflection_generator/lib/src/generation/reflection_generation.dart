@@ -16,6 +16,7 @@ import 'dart:io';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 // runSummaryCacheStage is re-exported by this package's summary.dart
 // (which itself re-exports `package:tom_analyzer_shared`).
@@ -161,6 +162,7 @@ class ReflectionGenerationResult {
     this.staleFiles = const [],
     this.cacheStatusShown = false,
     this.noFilesMatched = false,
+    this.severeCount = 0,
   });
 
   /// Number of files for which reflection was generated.
@@ -193,6 +195,14 @@ class ReflectionGenerationResult {
   /// True when no input files matched the supplied targets.
   final bool noFilesMatched;
 
+  /// Number of SEVERE diagnostics the generator emitted during the run.
+  ///
+  /// A severe means the generator met something it could not render and left it
+  /// out — the mirror is knowingly incomplete even though the file was written.
+  /// The count does not fail the run on its own, but it is the difference
+  /// between "succeeded" and "succeeded, with N things missing".
+  final int severeCount;
+
   /// Whether any target file failed to resolve or generate. When true the run
   /// must be treated as failed (non-zero exit).
   bool get hasFailures => failedCount > 0;
@@ -220,6 +230,27 @@ Future<ReflectionGenerationResult> generateReflection({
     print('Project root: $root');
   }
 
+  // The generator reports "met something I cannot render, leaving it out"
+  // through `package:logging`. Nothing subscribed to that logger, so those
+  // reports went nowhere: a run could drop a constructor's default value and
+  // still print "succeeded" and exit 0. Subscribing here is what makes such a
+  // degradation visible at the moment it happens rather than months later, as
+  // an unexplained diff in a committed mirror.
+  // Counted by message: the generator meets the same unsupported construct once
+  // per element that uses it, so a single cause can account for thousands of
+  // records. Printing each distinct message once keeps the report readable
+  // while the total still says how much was dropped.
+  final severeCounts = <String, int>{};
+  final logSubscription = Logger.root.onRecord
+      .where((record) => record.level >= Level.SEVERE)
+      .listen((record) {
+    severeCounts.update(record.message, (count) => count + 1, ifAbsent: () {
+      stderr.writeln('  SEVERE: ${record.message}');
+      return 1;
+    });
+  });
+  int severeTotal() => severeCounts.values.fold(0, (sum, n) => sum + n);
+
   // Summary caching stage.
   List<String>? summaryPaths;
   String? sdkSummaryPath;
@@ -235,6 +266,7 @@ Future<ReflectionGenerationResult> generateReflection({
     sdkSummaryPath = cacheResult?.sdkSummaryPath;
     if (options.showCacheStatus) {
       // --show-cache-status is info-only; nothing else to do.
+      await logSubscription.cancel();
       return const ReflectionGenerationResult(
         processedCount: 0,
         skippedCount: 0,
@@ -265,6 +297,10 @@ Future<ReflectionGenerationResult> generateReflection({
         noFilesMatched: true,
       );
     }
+
+    // Only diagnostics raised while processing targets belong to the run's
+    // report; anything the cache stage logged above is its own concern.
+    severeCounts.clear();
 
     var processedCount = 0;
     var skippedCount = 0;
@@ -347,11 +383,20 @@ Future<ReflectionGenerationResult> generateReflection({
           '(or `dart run tom_reflection_generator build`) and commit the '
           'result.');
     } else if (failedCount == 0) {
+      // The severe count rides on the success line rather than replacing it:
+      // the files were written, and saying otherwise would be false — but a
+      // reader must not have to diff the output to learn that parts of it were
+      // dropped.
+      final incomplete = severeCounts.isEmpty
+          ? ''
+          : ', ${severeTotal()} SEVERE diagnostic(s) in '
+              '${severeCounts.length} distinct case(s) — '
+              'the generated mirror is incomplete';
       print(options.checkOnly
           ? 'Reflection check succeeded after $elapsed — '
-              '$upToDateCount up to date, $skippedCount skipped.'
+              '$upToDateCount up to date, $skippedCount skipped$incomplete.'
           : 'Reflection generation succeeded after $elapsed — '
-              '$processedCount generated, $skippedCount skipped.');
+              '$processedCount generated, $skippedCount skipped$incomplete.');
     }
 
     return ReflectionGenerationResult(
@@ -361,9 +406,11 @@ Future<ReflectionGenerationResult> generateReflection({
       upToDateCount: upToDateCount,
       staleCount: staleFiles.length,
       staleFiles: staleFiles,
+      severeCount: severeTotal(),
     );
   } finally {
     resolver.dispose();
+    await logSubscription.cancel();
   }
 }
 

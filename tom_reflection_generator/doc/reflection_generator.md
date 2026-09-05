@@ -137,6 +137,47 @@ deliberate: normalising first would mean guessing which differences are benign,
 and a wrong guess hides exactly what this exists to catch. Regenerating settles
 it permanently.
 
+## Diagnostics
+
+A run that writes a file has not necessarily written a *complete* one. When the
+generator meets a construct it cannot render — a private constructor it may not
+call, a record type in a reflected type argument — it leaves that piece out and
+reports a **SEVERE** diagnostic. The file still compiles; it simply describes
+less than the source does.
+
+Those diagnostics are printed to stderr as they happen, and the closing line
+counts them:
+
+```text
+  SEVERE: [constant.constructor.private] Cannot access private constructor ...
+Reflection generation succeeded after 5m 29s — 1 generated, 0 skipped,
+226 SEVERE diagnostic(s) in 4 distinct case(s) — the generated mirror is
+incomplete.
+```
+
+Each distinct message is printed once, however many elements provoke it: one
+unsupported construct used across a widget library accounts for hundreds of
+records, and printing them all would bury the rest.
+
+A severe does **not** fail the run. It is a statement about coverage, not about
+correctness of what was emitted, and a project may legitimately reflect over
+code with constructs the generator does not support. What it must never be is
+invisible: for a long while nothing subscribed to the generator's logger at all,
+so a run could silently drop a constructor's default value — together with the
+imports that existed only to render it — and still report success. That is how
+`tom_flutter_form_test`'s committed mirror came to differ from its own
+regeneration by 143k lines with no explanation on record.
+
+### Reproducibility
+
+Generation is a function of the sources. In particular it does not depend on
+whether a given dependency happened to be served from the analyzer summary cache
+on this run: where a construct is reachable both from a library's source AST and
+from the element's own serialized data, the generator reads whichever is
+available and emits the same text either way. `--rebuild-cache` and a warm cache
+produce byte-identical output, which is what makes `--check` a meaningful gate
+rather than a report on cache state.
+
 ## Glob Patterns
 
 The generator supports standard glob patterns:

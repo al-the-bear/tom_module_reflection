@@ -141,6 +141,7 @@ Future<String> _extractConstantCode(
       return await _processInstanceCreation(
         expression,
         helper,
+        typeAnnotationHelper,
         importCollector,
         generatedLibraryId,
         resolver,
@@ -410,50 +411,56 @@ Future<String> _processSetLiteral(
 Future<String> _processInstanceCreation(
   InstanceCreationExpression expression,
   Future<String> Function(Expression) helper,
+  Future<String> Function(TypeAnnotation) typeAnnotationHelper,
   _ImportCollector importCollector,
   FileId generatedLibraryId,
   LibraryResolver resolver,
 ) async {
-  String constructor = expression.constructorName.toSource();
-  
-  if (_isPrivateName(constructor)) {
+  ConstructorName constructorName = expression.constructorName;
+  // The source text is the right thing to test for privacy — it covers both a
+  // private class (`_Foo()`) and a private named constructor (`Foo._bar()`) —
+  // and the wrong thing to emit; see below.
+  String constructorSource = constructorName.toSource();
+
+  if (_isPrivateName(constructorSource)) {
     await _severe(
       'constant.constructor.private',
-      'Cannot access private constructor `$constructor`, '
+      'Cannot access private constructor `$constructorSource`, '
       'needed for expression $expression',
     );
     return '';
   }
-  
-  LibraryElement libraryOfConstructor =
-      expression.constructorName.element!.library;
-  
+
+  LibraryElement libraryOfConstructor = constructorName.element!.library;
+
   if (await _isImportableLibrary(
     libraryOfConstructor,
     generatedLibraryId,
     resolver,
   )) {
     importCollector._addLibrary(libraryOfConstructor);
-    String prefix = importCollector._getPrefix(libraryOfConstructor);
-    
+
+    // Rebuild the invocation from its parts rather than re-using its source
+    // text, for the same reason `typeAnnotationHelper` does: source text
+    // carries the *originating* library's import prefix (`lib.Imported`),
+    // which names nothing here, and prepending the generated prefix to it
+    // yields `prefixNN.lib.Imported` — a name that looks deliberate and
+    // resolves to nothing. Routing the type through the same helper also
+    // re-qualifies its type arguments, so `lib.Foo<lib.Bar>()` does not
+    // smuggle a source prefix through in the one position source text would
+    // have copied verbatim.
+    String type = await typeAnnotationHelper(constructorName.type);
+    String namedConstructor =
+        constructorName.name == null ? '' : '.${constructorName.name!.name}';
+
     // Process constructor arguments
     var argumentList = <String>[];
     for (Expression argument in expression.argumentList.arguments) {
       argumentList.add(await helper(argument));
     }
     String arguments = argumentList.join(', ');
-    
-    // Double-check for private name after processing
-    if (_isPrivateName(constructor)) {
-      await _severe(
-        'constant.constructor.private_recheck',
-        'Cannot access private constructor `$constructor`, '
-        'needed for expression $expression (second check)',
-      );
-      return '';
-    }
-    
-    return 'const $prefix$constructor($arguments)';
+
+    return 'const $type$namedConstructor($arguments)';
   } else {
     await _severe(
       'constant.library.not_importable',
@@ -536,32 +543,54 @@ Future<String> _processIdentifier(
 }
 
 /// Processes a private identifier by expanding it to its initializer.
+///
+/// A private name cannot be written into the generated library — nothing there
+/// is in its scope — so the only faithful rendering is the initializer it
+/// stands for, inlined.
+///
+/// The initializer is reachable by two independent routes, and both are needed:
+/// the declaration's source AST, and the `const` initializer expression the
+/// element itself carries. The AST route is unavailable whenever the declaring
+/// library was loaded from an analyzer **summary bundle** rather than from
+/// source — `getResolvedLibraryByElement` cannot produce a resolved unit for a
+/// summary-backed element, so `_getDeclarationAst` returns null. Whether a given
+/// dependency happens to be summarised is a property of the shared analyzer
+/// cache, not of the code, so relying on the AST alone made the generated output
+/// depend on cache state: the same sources produced a constructor with its
+/// default value inlined on one run and without it on the next.
+/// `VariableElement.constantInitializer` is serialized into the bundle precisely
+/// so const values stay evaluable across libraries, and it closes that gap.
 Future<String> _processPrivateIdentifier(
   Identifier expression,
   Future<String> Function(Expression) helper,
   LibraryResolver resolver,
 ) async {
   Element? staticElement = expression.element;
-  
+
   if (staticElement is PropertyAccessorElement) {
     VariableElement? variable = staticElement.variable;
     AstNode? variableDeclaration = await _getDeclarationAst(
       variable,
       resolver,
     );
-    
-    if (variableDeclaration == null ||
-        variableDeclaration is! VariableDeclaration) {
-      await _severe(
-        'constant.identifier.private_no_declaration',
-        'Cannot handle private identifier $expression. '
-        'No valid variable declaration found.',
-      );
-      return '';
-    }
-    
+
     // A constant variable _does_ have an initializer.
-    return await helper(variableDeclaration.initializer!);
+    if (variableDeclaration is VariableDeclaration &&
+        variableDeclaration.initializer != null) {
+      return await helper(variableDeclaration.initializer!);
+    }
+
+    final Expression? constantInitializer = variable.constantInitializer;
+    if (constantInitializer != null) {
+      return await helper(constantInitializer);
+    }
+
+    await _severe(
+      'constant.identifier.private_no_declaration',
+      'Cannot handle private identifier $expression. '
+      'Neither a source declaration nor a constant initializer was found.',
+    );
+    return '';
   } else {
     await _severe(
       'constant.identifier.private_not_accessor',

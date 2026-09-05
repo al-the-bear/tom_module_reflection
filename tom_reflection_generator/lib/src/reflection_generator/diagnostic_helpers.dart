@@ -124,6 +124,17 @@ Future<ResolvedLibraryResult?> _getResolvedLibrary(
       .getResolvedLibraryByElement(freshLibrary);
   if (someResult is ResolvedLibraryResult) {
     return someResult;
+  } else if (someResult is UriOfExternalLibraryResult) {
+    // Expected, not an error: a library loaded from an analyzer summary bundle
+    // has no source to resolve, so the session answers "external URI". Both
+    // callers already handle a null result by reading the element's own
+    // serialized data instead. Reported as severe, this alone produced 12k
+    // lines on a single Flutter run — enough noise to hide the diagnostics
+    // that do mean something.
+    log.fine('[resolver.get_library.external] No resolvable source for '
+        '${library.firstFragment.source.uri}; it was loaded from a summary. '
+        'Falling back to the element\'s serialized data.');
+    return null;
   } else {
     log.severe('[resolver.get_library.inconsistent_session] Internal error: '
         'Inconsistent analysis session! Library: ${library.name}, '

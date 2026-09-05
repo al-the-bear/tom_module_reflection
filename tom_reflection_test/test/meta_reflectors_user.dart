@@ -10,6 +10,8 @@
 // statically depend on 'meta_reflectors_definer.dart' nor on
 // 'meta_reflectors_domain_definer.dart'.
 
+// intentionally-not-discovered: the tests live here but are driven by the
+// entry point meta_reflectors_test.dart, which imports this library.
 library test_reflection.test.meta_reflectors_user;
 
 import 'package:tom_reflection/tom_reflection.dart';

@@ -152,6 +152,7 @@ ReflectionGenerationOptions _parseOptions(
     rebuildCache: args.contains('--rebuild-cache'),
     showCacheStatus: args.contains('--show-cache-status'),
     cacheOnlyPackages: _parseCacheOnlyPackages(args),
+    checkOnly: args.contains('--check'),
   );
 }
 
@@ -190,7 +191,7 @@ Future<void> _runGenerateMode(List<String> args) async {
     options: options,
   );
 
-  _reportResult(result);
+  _reportResult(result, checkOnly: options.checkOnly);
 }
 
 /// Run in build mode - use build.yaml configuration and/or command-line globs
@@ -307,16 +308,22 @@ Future<void> _runBuildMode(List<String> args) async {
       rebuildCache: options.rebuildCache,
       showCacheStatus: options.showCacheStatus,
       cacheOnlyPackages: options.cacheOnlyPackages,
+      checkOnly: options.checkOnly,
     ),
   );
 
-  _reportResult(result, alwaysPrintSkipped: true);
+  _reportResult(
+    result,
+    alwaysPrintSkipped: true,
+    checkOnly: options.checkOnly,
+  );
 }
 
 /// Prints the summary for a completed run and exits when appropriate.
 void _reportResult(
   ReflectionGenerationResult result, {
   bool alwaysPrintSkipped = false,
+  bool checkOnly = false,
 }) {
   if (result.cacheStatusShown) {
     // --show-cache-status is info-only; exit after displaying.
@@ -328,7 +335,12 @@ void _reportResult(
     exit(0);
   }
 
-  print('\nProcessed: ${result.processedCount} files');
+  if (checkOnly) {
+    print('\nUp to date: ${result.upToDateCount} files');
+    print('Stale: ${result.staleCount} files');
+  } else {
+    print('\nProcessed: ${result.processedCount} files');
+  }
   if (alwaysPrintSkipped || result.skippedCount > 0) {
     print('Skipped: ${result.skippedCount} files');
   }
@@ -338,6 +350,13 @@ void _reportResult(
     // "Done." with exit 0.
     stderr.writeln('Failed: ${result.failedCount} files');
     stderr.writeln('Reflection generation FAILED.');
+    exit(1);
+  }
+
+  if (result.hasStaleOutputs) {
+    // Drift is a distinct failure from a crash, and the exit status is the
+    // whole point of check mode — the per-file detail was already printed by
+    // the pipeline.
     exit(1);
   }
 
@@ -389,6 +408,12 @@ Options:
   --useAllCapabilities
                       Use all capabilities for full reflection instead of
                       capabilities specified in reflector class
+  --check             Verify committed *.reflection.dart files instead of
+                      writing them. Generates as usual, then compares; exits
+                      non-zero and names any file that differs or is missing,
+                      without modifying anything. Use it to catch a generated
+                      file left stale by a source change — drift that a green
+                      suite and a clean analyze do not reveal.
   --no-cache          Disable summary caching for dependencies
   --rebuild-cache     Force regenerate all cached summaries
   --cache-only PKG    Only cache specific package(s) (repeatable)
@@ -409,6 +434,10 @@ Examples:
   dart run tom_reflection_generator build --config my_build.yaml
   dart run tom_reflection_generator build "test/**_test.dart"
   dart run tom_reflection_generator build -v
+
+  # Check mode - fail if a committed .reflection.dart has drifted
+  dart run tom_reflection_generator build --check
+  dart run tom_reflection_generator --check "lib/**/*.dart"
 
 build.yaml format:
   targets:

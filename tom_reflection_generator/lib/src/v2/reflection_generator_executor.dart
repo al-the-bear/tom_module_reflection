@@ -48,6 +48,7 @@ class ReflectionGeneratorExecutor extends CommandExecutor {
   Future<ItemResult> execute(CommandContext context, CliArgs args) async {
     final projectPath = context.path;
     final verbose = args.verbose;
+    final checkOnly = _flag(args, 'check');
 
     // Resolve the input targets for this project (step-3 precedence:
     // positional args > buildkit.yaml section > build.yaml fallback).
@@ -81,6 +82,7 @@ class ReflectionGeneratorExecutor extends CommandExecutor {
           rebuildCache: _flag(args, 'rebuild-cache'),
           showCacheStatus: _flag(args, 'show-cache-status'),
           cacheOnlyPackages: _stringList(args.extraOptions['cache-only']),
+          checkOnly: checkOnly,
         ),
       );
 
@@ -104,6 +106,28 @@ class ReflectionGeneratorExecutor extends CommandExecutor {
           error: 'Reflection generation failed for ${result.failedCount} '
               'file(s) (generated ${result.processedCount}, '
               'skipped ${result.skippedCount})',
+        );
+      }
+
+      if (result.hasStaleOutputs) {
+        // The generated file no longer matches its source. Failing the item is
+        // the whole purpose of check mode: this drift is invisible to
+        // `dart analyze` and to the test suites, so the build is the only
+        // place it can be caught.
+        return ItemResult.failure(
+          path: projectPath,
+          name: context.name,
+          error: '${result.staleCount} generated file(s) are stale — '
+              '${result.staleFiles.join(', ')}. Regenerate and commit.',
+        );
+      }
+
+      if (checkOnly) {
+        return ItemResult.success(
+          path: projectPath,
+          name: context.name,
+          message: 'Up to date ${result.upToDateCount}, '
+              'skipped ${result.skippedCount}',
         );
       }
 

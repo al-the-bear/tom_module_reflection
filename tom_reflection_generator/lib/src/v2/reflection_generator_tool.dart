@@ -57,6 +57,16 @@ const reflectionGeneratorOptions = <OptionDefinition>[
     description:
         'Use all capabilities instead of those declared on the reflector class',
   ),
+  // Deliberately a distinct flag rather than the framework's --dry-run (which
+  // this tool leaves disabled). Dry-run means "show what would happen and
+  // succeed"; --check means "fail if it would change anything". The exit
+  // status is the entire point, so it gets its own name.
+  OptionDefinition.flag(
+    name: 'check',
+    description:
+        'Verify committed *.reflection.dart files instead of writing them; '
+        'fail if any differs from what would be generated',
+  ),
   OptionDefinition.flag(
     name: 'no-cache',
     description: 'Disable analyzer summary caching for dependencies',

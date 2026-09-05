@@ -58,6 +58,7 @@ dart run tom_reflection_generator build --config custom.yaml
 | `-c`, `--config=FILE` | Config file for build mode (default: build.yaml) |
 | `--verbose`, `-v` | Enable verbose output |
 | `--useAllCapabilities` | Use all capabilities instead of reflector-specified |
+| `--check` | Verify committed output instead of writing it (see [Check Mode](#check-mode)) |
 
 ### Examples
 
@@ -80,6 +81,61 @@ dart run tom_reflection_generator build --config reflection.yaml
 # Verbose output
 dart run tom_reflection_generator --all lib/ --verbose
 ```
+
+## Check Mode
+
+`--check` answers one question: **does the committed `*.reflection.dart` still
+match what the generator would emit for its source?**
+
+```bash
+# Verify this project's committed output
+dart run tom_reflection_generator --check
+
+# Or through the project's own script
+./reflection_generation.sh --check
+```
+
+Everything up to the final write is an ordinary run — same resolver, same
+capabilities, same generated string. Only the last step differs: the string is
+compared with the file on disk instead of replacing it. The run exits non-zero
+and names every file that differs or is missing, and **modifies nothing**.
+
+### Why it exists
+
+A generated file that has fallen behind its source is invisible to every other
+signal. When a reflected parameter was widened from `String?` to `Object?` in
+two packages, the generated seeds kept the old type indices and were committed
+stale. Measured at the time: `dart analyze` was clean and both suites were fully
+green, with identical test counts before and after regeneration. The stale part
+is metadata the tests never read.
+
+So "remember to regenerate after changing a reflected signature" was the only
+thing preventing a committed mismatch — and a habit is not a control. This is
+the control.
+
+### Cost
+
+A check is a full generation run (roughly 20–30 s per package, dominated by
+analysis), because comparing against what the generator *would* emit means
+actually running it. That cost is the reason this is a deliberate step rather
+than something on every save.
+
+### Reading a failure
+
+```text
+  STALE (differs): lib/src/reflection_entry.reflection.dart
+Reflection check FAILED after 21.0s — 1 generated file(s) no longer match
+their source, 0 up to date, 0 skipped.
+```
+
+The remedy is always the same: run the generator normally and commit the
+result. A missing output is reported as stale too — a source that should have a
+generated counterpart and has none is the same drift with the same fix.
+
+Comparison is exact, so a formatting difference is reported as drift. That is
+deliberate: normalising first would mean guessing which differences are benign,
+and a wrong guess hides exactly what this exists to catch. Regenerating settles
+it permanently.
 
 ## Glob Patterns
 

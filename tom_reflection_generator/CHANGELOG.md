@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.4.0
+
+- **New: `--check` verifies that committed `*.reflection.dart` files still
+  match their sources.** The generator runs exactly as usual and then compares
+  what it would emit against what is on disk, instead of overwriting it; it
+  exits non-zero naming every file that differs or is missing, and modifies
+  nothing.
+
+  This closes a gap in which a reflected signature change left its generated
+  counterpart stale and *nothing noticed*. Widening a parameter from `String?`
+  to `Object?` in two packages changed a type index in each generated seed;
+  neither was regenerated, and both were committed stale. Measured at the time:
+  `dart analyze` was clean and both suites fully green, with identical test
+  counts before and after regeneration — the stale part is metadata the tests
+  never exercise. "Remember to regenerate" was the only thing standing in the
+  way of a committed mismatch, and a habit is not a control.
+
+  Available on the CLI, in nested/buildkit mode (a stale file fails the item),
+  and through each project's `reflection_generation.sh --check`. A check costs a
+  full generation run (~20–30 s per package) because answering the question
+  means actually generating. See `doc/reflection_generator.md` § Check Mode.
+
 ## 1.3.2
 
 - **Fix: a type annotation no longer carries the originating library's import

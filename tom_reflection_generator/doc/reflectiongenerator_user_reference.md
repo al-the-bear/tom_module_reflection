@@ -38,6 +38,7 @@ dart run tom_reflection_generator [command] [options] <targets...>
 | `--extension` | `-e` | Output file extension (default: `.reflection.dart`) |
 | `--config` | `-c` | Config file path for build mode (default: `build.yaml`) |
 | `--useAllCapabilities` | — | Use all capabilities (full reflection) |
+| `--check` | — | Verify committed output instead of writing it; fail on drift |
 | `--verbose` | `-v` | Enable verbose output |
 | `--help` | `-h` | Show usage help |
 
@@ -160,6 +161,7 @@ dart run build_runner build --delete-conflicting-outputs
 | `--package` | `tom_reflection` | Reflection package name |
 | `--extension` | `.reflection.dart` | Output file extension |
 | `--useAllCapabilities` | `false` | Generate full reflection metadata |
+| `--check` | `false` | Compare against committed output instead of writing it |
 
 ---
 

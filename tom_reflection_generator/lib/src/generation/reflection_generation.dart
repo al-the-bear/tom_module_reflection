@@ -34,6 +34,7 @@ class ReflectionGenerationOptions {
     this.rebuildCache = false,
     this.showCacheStatus = false,
     this.cacheOnlyPackages = const [],
+    this.checkOnly = false,
   });
 
   /// Reflection package name whose annotations trigger generation.
@@ -62,6 +63,20 @@ class ReflectionGenerationOptions {
 
   /// Restrict summary caching to specific package(s).
   final List<String> cacheOnlyPackages;
+
+  /// Compare against the committed output instead of overwriting it.
+  ///
+  /// Everything up to the final write is identical to an ordinary run — the
+  /// same resolver, the same generator, the same source string. Only the last
+  /// step differs: the string is compared with what is on disk rather than
+  /// replacing it, and any difference fails the run.
+  ///
+  /// This is the guard against a generated file that no longer matches its
+  /// source. That drift is invisible to every other signal: a stale type index
+  /// leaves `dart analyze` clean and the suites green, because it is metadata
+  /// the tests never read. Costly — a check run is a full generation run — but
+  /// it is the only thing that actually answers the question.
+  final bool checkOnly;
 }
 
 /// Per-file result of [processReflectionFile].
@@ -83,6 +98,56 @@ enum ReflectionFileOutcome {
   /// Resolution or generation threw. A hard failure — the run must exit
   /// non-zero and must not be reported as succeeded.
   failed,
+
+  /// Check mode only: the committed output matches what would be generated.
+  upToDate,
+
+  /// Check mode only: the committed output differs from what would be
+  /// generated, or is missing entirely. The source and its generated
+  /// counterpart have diverged; the run must exit non-zero.
+  stale,
+}
+
+/// Writes [generatedSource] to [outputPath], or in check mode compares the two.
+///
+/// This is the single point where generating and checking diverge, which is why
+/// it is a named function rather than an `if` inside [processReflectionFile]:
+/// everything before it — resolver, capabilities, generator — is shared by
+/// construction, so a check cannot drift from the generation it is checking.
+///
+/// Comparison is exact. A benign formatting difference would be reported as
+/// drift, which sounds harsh but converges: the remedy is to regenerate, and
+/// once regenerated the bytes agree permanently. The alternative — normalising
+/// before comparing — would have to guess which differences are benign, and
+/// guessing wrong in that direction hides the very defect this exists to catch.
+///
+/// A missing output counts as [ReflectionFileOutcome.stale]. A source that
+/// should have a generated counterpart and does not is drift, and the remedy is
+/// the same: run the generator.
+ReflectionFileOutcome applyGeneratedOutput({
+  required String outputPath,
+  required String generatedSource,
+  required bool checkOnly,
+}) {
+  final output = File(outputPath);
+
+  if (!checkOnly) {
+    output.writeAsStringSync(generatedSource);
+    print('  Generated: $outputPath');
+    return ReflectionFileOutcome.generated;
+  }
+
+  if (!output.existsSync()) {
+    stderr.writeln('  STALE (missing): $outputPath');
+    return ReflectionFileOutcome.stale;
+  }
+
+  if (output.readAsStringSync() == generatedSource) {
+    return ReflectionFileOutcome.upToDate;
+  }
+
+  stderr.writeln('  STALE (differs): $outputPath');
+  return ReflectionFileOutcome.stale;
 }
 
 /// Outcome of a reflection-generation run.
@@ -91,6 +156,9 @@ class ReflectionGenerationResult {
     required this.processedCount,
     required this.skippedCount,
     this.failedCount = 0,
+    this.upToDateCount = 0,
+    this.staleCount = 0,
+    this.staleFiles = const [],
     this.cacheStatusShown = false,
     this.noFilesMatched = false,
   });
@@ -106,6 +174,19 @@ class ReflectionGenerationResult {
   /// failures, never benign skips.
   final int failedCount;
 
+  /// Check mode: number of files whose committed output already matches.
+  final int upToDateCount;
+
+  /// Check mode: number of files whose committed output differs or is missing.
+  final int staleCount;
+
+  /// Check mode: the project-relative paths behind [staleCount].
+  ///
+  /// Carried rather than merely counted because the count alone does not tell
+  /// anyone what to regenerate, and the whole point of the check is to name the
+  /// file that drifted.
+  final List<String> staleFiles;
+
   /// True when the run only displayed cache status and generated nothing.
   final bool cacheStatusShown;
 
@@ -115,6 +196,12 @@ class ReflectionGenerationResult {
   /// Whether any target file failed to resolve or generate. When true the run
   /// must be treated as failed (non-zero exit).
   bool get hasFailures => failedCount > 0;
+
+  /// Whether any committed output has drifted from its source (check mode).
+  ///
+  /// Independent of [hasFailures]: a crash and a stale output are different
+  /// faults with different remedies, and a run can produce both.
+  bool get hasStaleOutputs => staleCount > 0;
 }
 
 /// Runs the full reflection-generation pipeline for [targets] (files,
@@ -182,14 +269,18 @@ Future<ReflectionGenerationResult> generateReflection({
     var processedCount = 0;
     var skippedCount = 0;
     var failedCount = 0;
+    var upToDateCount = 0;
     final failedFiles = <String>[];
+    final staleFiles = <String>[];
 
     // Build-runner-style progress so a run is observable even in non-verbose
     // mode (e.g. when nested under buildkit, where this tool's stdout is the
     // only signal the user sees).
     final total = filesToProcess.length;
     final stopwatch = Stopwatch()..start();
-    print('Generating reflection for $total target file(s)...');
+    print(options.checkOnly
+        ? 'Checking reflection for $total target file(s)...'
+        : 'Generating reflection for $total target file(s)...');
 
     var index = 0;
     for (final filePath in filesToProcess) {
@@ -205,6 +296,7 @@ Future<ReflectionGenerationResult> generateReflection({
         options.packageName,
         options.outputExtension,
         useAllCapabilities: options.useAllCapabilities,
+        checkOnly: options.checkOnly,
       );
       switch (outcome) {
         case ReflectionFileOutcome.generated:
@@ -214,31 +306,61 @@ Future<ReflectionGenerationResult> generateReflection({
         case ReflectionFileOutcome.failed:
           failedCount++;
           failedFiles.add(p.relative(filePath, from: root));
+        case ReflectionFileOutcome.upToDate:
+          upToDateCount++;
+        case ReflectionFileOutcome.stale:
+          staleFiles.add(
+            p.relative(
+              filePath.replaceAll('.dart', options.outputExtension),
+              from: root,
+            ),
+          );
       }
     }
 
     stopwatch.stop();
+    final elapsed = _formatElapsed(stopwatch.elapsed);
+    final verb = options.checkOnly ? 'check' : 'generation';
+
     if (failedCount > 0) {
       // A crash on an explicit target must be loud and must fail the run —
       // never reported as "succeeded". Write to stderr so it stands out even
       // when this tool is nested under another builder.
-      stderr.writeln('Reflection generation FAILED after '
-          '${_formatElapsed(stopwatch.elapsed)} — '
+      stderr.writeln('Reflection $verb FAILED after $elapsed — '
           '$processedCount generated, $skippedCount skipped, '
           '$failedCount failed.');
       for (final failed in failedFiles) {
         stderr.writeln('  FAILED: $failed');
       }
-    } else {
-      print('Reflection generation succeeded after '
-          '${_formatElapsed(stopwatch.elapsed)} — '
-          '$processedCount generated, $skippedCount skipped.');
+    }
+
+    if (staleFiles.isNotEmpty) {
+      stderr.writeln('Reflection check FAILED after $elapsed — '
+          '${staleFiles.length} generated file(s) no longer match their '
+          'source, $upToDateCount up to date, $skippedCount skipped.');
+      for (final stale in staleFiles) {
+        stderr.writeln('  STALE: $stale');
+      }
+      // The remedy is one command, and naming it here saves the reader working
+      // out that a *check* failure is repaired by an ordinary *generate* run.
+      stderr.writeln('Regenerate with the project\'s reflection_generation.sh '
+          '(or `dart run tom_reflection_generator build`) and commit the '
+          'result.');
+    } else if (failedCount == 0) {
+      print(options.checkOnly
+          ? 'Reflection check succeeded after $elapsed — '
+              '$upToDateCount up to date, $skippedCount skipped.'
+          : 'Reflection generation succeeded after $elapsed — '
+              '$processedCount generated, $skippedCount skipped.');
     }
 
     return ReflectionGenerationResult(
       processedCount: processedCount,
       skippedCount: skippedCount,
       failedCount: failedCount,
+      upToDateCount: upToDateCount,
+      staleCount: staleFiles.length,
+      staleFiles: staleFiles,
     );
   } finally {
     resolver.dispose();
@@ -341,6 +463,10 @@ void collectDartFilesFromDirectory(String dirPath, Set<String> files) {
 /// non-library result), and [ReflectionFileOutcome.failed] when resolution or
 /// generation *threw*. A thrown exception is a hard failure — it is reported
 /// prominently and never collapsed into a benign skip.
+///
+/// With [checkOnly] the generated source is compared against the committed
+/// output instead of replacing it, yielding [ReflectionFileOutcome.upToDate] or
+/// [ReflectionFileOutcome.stale]. See [applyGeneratedOutput].
 Future<ReflectionFileOutcome> processReflectionFile(
   String filePath,
   String projectRoot,
@@ -349,6 +475,7 @@ Future<ReflectionFileOutcome> processReflectionFile(
   String packageName,
   String outputExtension, {
   bool useAllCapabilities = false,
+  bool checkOnly = false,
 }) async {
   if (verbose) {
     print('Analyzing: $filePath');
@@ -407,12 +534,13 @@ Future<ReflectionFileOutcome> processReflectionFile(
       [], // no suppressed warnings
     );
 
-    // Write the output file.
+    // Write the output file, or in check mode compare against it.
     final outputPath = filePath.replaceAll('.dart', outputExtension);
-    await File(outputPath).writeAsString(generatedSource);
-
-    print('  Generated: $outputPath');
-    return ReflectionFileOutcome.generated;
+    return applyGeneratedOutput(
+      outputPath: outputPath,
+      generatedSource: generatedSource,
+      checkOnly: checkOnly,
+    );
   } catch (e, st) {
     // A crash here (e.g. a corrupt analyzer summary in the cache throwing
     // RangeError) is a hard failure, not a skip. Report it prominently on

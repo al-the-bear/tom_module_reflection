@@ -166,6 +166,7 @@ Tool-specific options (framework options like `--verbose`/`-v`, `--help`/`-h`,
 | `--extension`, `-e` | Output file extension (default `.reflection.dart`). |
 | `--config`, `-c` | `build.yaml` path for the build-mode fallback (default `build.yaml`). |
 | `--useAllCapabilities` | Emit full metadata regardless of declared capabilities. |
+| `--check` | Verify committed output instead of writing it; fail on drift. |
 | `--no-cache` | Disable analyzer summary caching for dependencies. |
 | `--rebuild-cache` | Force regeneration of all cached summaries. |
 | `--show-cache-status` | List which packages have cached summaries, then stop. |
@@ -175,6 +176,23 @@ Tool-specific options (framework options like `--verbose`/`-v`, `--help`/`-h`,
 > summaries of unchanged dependencies (via `tom_analyzer_shared`). If a run in a
 > compiled/AOT environment misbehaves on summary discovery, `--no-cache` is the
 > reliable fallback while still producing correct output.
+
+### Checking that committed output is current
+
+A generated file that has fallen behind its source is invisible to `dart
+analyze` and to the test suites — the stale part is metadata the tests never
+read. `--check` is the control for that: it runs the generator and *compares*
+the result with what is committed, instead of overwriting it.
+
+```bash
+dart run tom_reflection_generator --check      # this project
+./reflection_generation.sh --check             # same, via the project's script
+```
+
+It exits non-zero and names every file that differs or is missing, and modifies
+nothing. The remedy is always an ordinary generate run, followed by committing
+the result. A check costs a full generation (~20–30 s per package), which is why
+it is a deliberate step rather than something run on every save.
 
 ## Versioning
 
